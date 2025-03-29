@@ -1,0 +1,116 @@
+/* Подключение шрифта Poppins из Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif; /* Используем шрифт Poppins */
+  background-color: white; /* Белый фон страницы */
+}
+
+/* Шапка */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: white; /* Белый фон шапки */
+  color: black; /* Черный текст */
+  border-bottom: 1px solid #e0e0e0; /* Легкая граница снизу */
+}
+
+.logo a {
+  color: black; /* Черный текст для логотипа */
+  text-decoration: none;
+  font-size: 24px;
+  font-weight: 600; /* Полужирный для логотипа */
+}
+
+.nav {
+  margin-left: auto; /* Сдвигаем навигацию вправо */
+}
+
+.nav-list {
+  list-style: none;
+  display: flex;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-list li {
+  margin-left: 20px;
+}
+
+.nav-list a {
+  color: black; /* Черный текст для ссылок */
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 400; /* Обычный вес для ссылок */
+  transition: color 0.3s;
+}
+
+.nav-list a:hover {
+  color: #90E051; /* Зеленый цвет при наведении */
+}
+
+.auth {
+  display: flex;
+  align-items: center;
+}
+
+.auth a {
+  color: black; /* Черный текст для кнопок */
+  text-decoration: none;
+  margin-left: 20px;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-weight: 600; /* Полужирный для кнопок */
+  transition: color 0.3s;
+}
+
+.auth a:hover {
+  color: #90E051; /* Зеленый цвет при наведении */
+}
+
+/* Баннер */
+.banner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 400px; /* Высота баннера */
+  background-color: #f9f9f9; /* Светлый фон */
+  text-align: center;
+}
+
+.banner-content {
+  max-width: 600px;
+}
+
+.banner h1 {
+  font-size: 48px;
+  font-weight: 600;
+  margin: 0;
+  color: black; /* Черный текст */
+  font-family: 'Poppins', sans-serif; /* Шрифт Poppins */
+}
+
+.banner p {
+  font-size: 18px;
+  color: #90E051; /* Зеленый текст */
+  margin: 20px 0;
+  font-family: 'Poppins', sans-serif; /* Шрифт Poppins */
+}
+
+.banner-button {
+  display: inline-block;
+  padding: 12px 24px;
+  background-color: #90E051; /* Зеленый цвет кнопки */
+  color: white; /* Белый текст */
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.banner-button:hover {
+  background-color: #7cc142; /* Темно-зеленый при наведении */
+}
