@@ -114,3 +114,144 @@ body {
 .banner-button:hover {
   background-color: #7cc142; /* Темно-зеленый при наведении */
 }
+
+/* Секция меню */
+.menu-section {
+  padding: 60px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-title {
+  text-align: center;
+  font-size: 2.5rem;
+  margin-bottom: 40px;
+  color: #333;
+}
+
+/* Адаптивность для шапки */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px 20px;
+  }
+  
+  .nav-list {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+  }
+  
+  .nav-list li {
+    margin-left: 0;
+  }
+}
+
+/* Адаптивность баннера */
+@media (max-width: 480px) {
+  .banner {
+    height: 300px;
+    padding: 0 15px;
+  }
+  
+  .banner h1 {
+    font-size: 36px;
+  }
+  
+  .banner p {
+    font-size: 16px;
+  }
+}
+
+/* Доработки для кнопок авторизации */
+.auth a.login {
+  border: 2px solid #90E051;
+  color: #90E051;
+}
+
+.auth a.register {
+  background-color: #90E051;
+  color: white;
+}
+
+.auth a.register:hover {
+  background-color: #7cc142;
+  color: white;
+}
+
+.products-container {
+  max-width: 1200px; /* Ограничиваем ширину контейнера */
+  margin: 0 auto; /* Автоматические отступы по бокам - центрирование */
+  padding: 20px;
+}
+
+.product-category {
+  margin-bottom: 40px;
+}
+
+/* Доработки карточек товаров */
+.product-card {
+  margin-bottom: 20px;
+}
+
+/* Адаптивность карточек */
+@media (max-width: 768px) {
+  .products {
+    justify-content: center;
+  }
+  
+  .product-card {
+    width: 100%;
+    max-width: 350px;
+  }
+}
+
+/* Единый стиль для всех заголовков */
+h1, h2, h3 {
+  color: #333;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Фикс для отступов */
+body {
+  line-height: 1.6;
+}
+
+/* Улучшение читаемости описания товаров */
+.product-description {
+  line-height: 1.5;
+  height: auto;
+  min-height: 60px;
+}
+
+/* Ховер-эффекты для навигации */
+.nav-list a {
+  position: relative;
+  padding-bottom: 5px;
+}
+
+.nav-list a::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: #90E051;
+  transition: width 0.3s ease;
+}
+
+.nav-list a:hover::after {
+  width: 100%;
+}
+
+/* Фикс для логотипа */
+.logo a {
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
+.logo a:hover {
+  transform: scale(1.05);
+}
