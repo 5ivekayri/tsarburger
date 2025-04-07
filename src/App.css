@@ -1,10 +1,11 @@
-/* Подключение шрифта Poppins из Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+/* Подключение шрифта Montserrat из Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap&subset=cyrillic');
 
 body {
   margin: 0;
-  font-family: 'Poppins', sans-serif; /* Используем шрифт Poppins */
-  background-color: white; /* Белый фон страницы */
+  font-family: 'Montserrat', sans-serif; /* Используем шрифт Montserrat */
+  /*background-color: white;*/
+  
 }
 
 /* Шапка */
@@ -25,31 +26,57 @@ body {
   font-weight: 600; /* Полужирный для логотипа */
 }
 
-.nav {
-  margin-left: auto; /* Сдвигаем навигацию вправо */
-}
-
+/* Шапка */
 .nav-list {
   list-style: none;
   display: flex;
   margin: 0;
   padding: 0;
+  gap: 20px; /* Добавим gap вместо margin-left для li */
 }
 
 .nav-list li {
-  margin-left: 20px;
+  margin: 0; /* Убираем старый margin-left */
 }
 
-.nav-list a {
-  color: black; /* Черный текст для ссылок */
-  text-decoration: none;
+/* Стили для кнопок вместо ссылок */
+.nav-list button {
+  background: none;
+  border: none;
+  color: black; 
+  font-family: 'Montserrat', sans-serif;
   font-size: 16px;
-  font-weight: 400; /* Обычный вес для ссылок */
+  font-weight: 400;
+  cursor: pointer;
+  padding: 5px 0; /* Для лучшего кликабельного area */
+  position: relative;
   transition: color 0.3s;
 }
 
-.nav-list a:hover {
-  color: #90E051; /* Зеленый цвет при наведении */
+/* Ховер-эффект с подчеркиванием */
+.nav-list button::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: #90E051;
+  transition: width 0.3s ease;
+}
+
+.nav-list button:hover {
+  color: #90E051;
+  outline: none; /* Убираем outline при фокусе */
+}
+
+.nav-list button:hover::after {
+  width: 100%;
+}
+
+/* Убираем стандартный фокус у кнопок */
+.nav-list button:focus {
+  outline: none;
 }
 
 .auth {
@@ -90,14 +117,14 @@ body {
   font-weight: 600;
   margin: 0;
   color: black; /* Черный текст */
-  font-family: 'Poppins', sans-serif; /* Шрифт Poppins */
+  font-family: 'Montserrat', sans-serif; /* Шрифт Montserrat */
 }
 
 .banner p {
   font-size: 18px;
   color: #90E051; /* Зеленый текст */
   margin: 20px 0;
-  font-family: 'Poppins', sans-serif; /* Шрифт Poppins */
+  font-family: 'Montserrat', sans-serif; /* Шрифт Montserrat */
 }
 
 .banner-button {
@@ -180,37 +207,114 @@ body {
   color: white;
 }
 
+
 .products-container {
-  max-width: 1200px; /* Ограничиваем ширину контейнера */
-  margin: 0 auto; /* Автоматические отступы по бокам - центрирование */
+  max-width: 1200px;
+  margin: 0 auto; /* Центрирование вместо margin: 0 left */
   padding: 20px;
 }
 
+/* Добавляем стили для сетки карточек */
 .product-category {
   margin-bottom: 40px;
 }
 
-/* Доработки карточек товаров */
-.product-card {
-  margin-bottom: 20px;
+.products {
+  display: flex;       /* Включаем Flexbox */
+  flex-wrap: wrap;     /* Перенос карточек на новую строку */
+  gap: 20px;           /* Отступ между карточками */
 }
 
-/* Адаптивность карточек */
+/* Product Card Styles */
+.product-card {
+  flex: 1 1 250px;
+  max-width: 300px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  overflow: hidden; /* Для скругления углов изображения */
+  background: white;
+  transition: transform 0.3s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+}
+
+.product-image {
+  position: relative;
+  width: 100%;
+  height: 200px; /* Фиксированная высота для всех изображений */
+  overflow: hidden;
+}
+
+.product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Сохраняет пропорции и заполняет контейнер */
+  object-position: center;
+  transition: transform 0.3s ease;
+}
+
+.product-image:hover img {
+  transform: scale(1.05);
+}
+
+.product-info {
+  padding: 15px;
+}
+
+.product-title {
+  font-size: 1.1rem;
+  margin: 0 0 8px 0;
+  color: #333;
+}
+
+.product-description {
+  font-size: 0.9rem;
+  color: #666;
+  margin: 0 0 12px 0;
+  height: 60px; /* Фиксированная высота для описания */
+  overflow: hidden;
+}
+
+.product-price {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #90E051;
+  margin-bottom: 15px;
+}
+
+.add-to-cart {
+  width: 100%;
+  padding: 10px;
+  background-color: #90E051;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.add-to-cart:hover {
+  background-color: #7cc142;
+}
+
+/* Адаптивность */
 @media (max-width: 768px) {
-  .products {
-    justify-content: center;
+  .product-card {
+    max-width: 100%;
+    flex-basis: 100%;
   }
   
-  .product-card {
-    width: 100%;
-    max-width: 350px;
+  .product-image {
+    height: 250px;
   }
 }
 
 /* Единый стиль для всех заголовков */
 h1, h2, h3 {
   color: #333;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Montserrat', sans-serif;
 }
 
 /* Фикс для отступов */
@@ -254,4 +358,100 @@ body {
 
 .logo a:hover {
   transform: scale(1.05);
+}
+
+/* Footer Styles */
+.footer {
+  background-color: #2d2d2d; /* Тёмный фон */
+  color: white;
+  padding: 50px 20px 30px;
+  margin-top: 80px; /* Отступ от предыдущего контента */
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 30px;
+}
+
+.footer-section {
+  margin-bottom: 30px;
+}
+
+.footer-section h4 {
+  color: #90E051; /* Зелёный цвет заголовков */
+  margin-bottom: 20px;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-links li {
+  margin-bottom: 12px;
+}
+
+.footer-links a {
+  color: #ffffffcc; /* Полупрозрачный белый */
+  text-decoration: none;
+  transition: color 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer-links a:hover {
+  color: #90E051;
+}
+
+.contact-info p {
+  margin: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.social-links {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.social-links a {
+  color: white;
+  font-size: 24px;
+  transition: color 0.3s;
+}
+
+.social-links a:hover {
+  color: #90E051;
+}
+
+.footer-bottom {
+  text-align: center;
+  margin-top: 50px;
+  padding-top: 30px;
+  border-top: 1px solid #ffffff1a; /* Светлая граница */
+  color: #ffffff99;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .footer-content {
+    grid-template-columns: 1fr;
+  }
+  
+  .footer-section {
+    text-align: center;
+  }
+  
+  .social-links {
+    justify-content: center;
+  }
 }
