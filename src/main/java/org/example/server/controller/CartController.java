@@ -1,0 +1,62 @@
+package org.example.server.controller;
+
+
+import org.example.server.service.CartService;
+import org.example.server.dto.CartDTO;
+import org.example.server.mapper.CartMapper;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/cart")
+@PreAuthorize("isAuthenticated()")
+public class CartController {
+
+    private final CartService cartService;
+    private final CartMapper cartMapper;
+
+    public CartController(CartService cartService, CartMapper cartMapper) {
+        this.cartService = cartService;
+        this.cartMapper = cartMapper;
+    }
+
+    // Получить корзину пользователя
+    @GetMapping
+    public ResponseEntity<CartDTO> getCart(@RequestAttribute("userId") String userId) {
+        return ResponseEntity.ok(cartMapper.toDTO(cartService.getCart(userId)));
+    }
+
+    // Добавить товар в корзину
+    @PostMapping("/items")
+    public ResponseEntity<CartDTO> addToCart(
+            @RequestAttribute("userId") String userId,
+            @RequestParam String menuItemId,
+            @RequestParam int quantity) {
+        return ResponseEntity.ok(cartMapper.toDTO(cartService.addToCart(userId, menuItemId, quantity)));
+    }
+
+    // Удалить товар из корзины
+    @DeleteMapping("/items/{menuItemId}")
+    public ResponseEntity<CartDTO> removeFromCart(
+            @RequestAttribute("userId") String userId,
+            @PathVariable String menuItemId) {
+        return ResponseEntity.ok(cartMapper.toDTO(cartService.removeFromCart(userId, menuItemId)));
+    }
+
+    // Обновить количество товара в корзине
+    @PutMapping("/items/{menuItemId}")
+    public ResponseEntity<CartDTO> updateItemQuantity(
+            @RequestAttribute("userId") String userId,
+            @PathVariable String menuItemId,
+            @RequestParam int quantity) {
+        return ResponseEntity.ok(cartMapper.toDTO(cartService.updateItemQuantity(userId, menuItemId, quantity)));
+    }
+
+    // Очистить корзину
+    @DeleteMapping
+    public ResponseEntity<Void> clearCart(@RequestAttribute("userId") String userId) {
+        cartService.clearCart(userId);
+        return ResponseEntity.ok().build();
+    }
+} 
