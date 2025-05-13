@@ -57,13 +57,13 @@ function App() {
       
       switch (activeTab) {
         case 'products':
-          endpoint = 'http://localhost:8080/api/products'
+          endpoint = '/api/products'
           break
         case 'users':
-          endpoint = 'http://localhost:8080/api/users'
+          endpoint = '/api/users'
           break
         case 'orders':
-          endpoint = 'http://localhost:8080/api/orders'
+          endpoint = '/api/orders'
           break
       }
 

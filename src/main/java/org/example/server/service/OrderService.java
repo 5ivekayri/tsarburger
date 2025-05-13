@@ -29,6 +29,7 @@ public class OrderService {
             throw new RuntimeException("Корзина пуста");
         }
 
+       
         Order order = new Order();
         order.setUserId(userId);
         // Конвертируем CartItem в OrderItem

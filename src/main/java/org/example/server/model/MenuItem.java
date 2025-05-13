@@ -20,4 +20,6 @@ public class MenuItem {
     private double price;
     private String imageUrl;
     private boolean available;
+    private String category;
+    private String imageBase64;
 } 

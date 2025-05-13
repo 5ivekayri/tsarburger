@@ -4,13 +4,11 @@ import org.example.server.model.Order;
 import org.example.server.service.OrderService;
 import org.example.server.dto.OrderDTO;
 import org.example.server.mapper.OrderMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -19,7 +17,6 @@ public class OrderController {
     private final OrderService orderService;
     private final OrderMapper orderMapper;
 
-    @Autowired
     public OrderController(OrderService orderService, OrderMapper orderMapper) {
         this.orderService = orderService;
         this.orderMapper = orderMapper;
@@ -47,7 +44,7 @@ public class OrderController {
     public ResponseEntity<List<OrderDTO>> getUserOrders(@RequestAttribute("userId") String userId) {
         return ResponseEntity.ok(orderService.getUserOrders(userId).stream()
                 .map(orderMapper::toDTO)
-                .collect(Collectors.toList()));
+                .toList());
     }
 
     // Получить все заказы (для администратора)
@@ -56,7 +53,7 @@ public class OrderController {
     public ResponseEntity<List<OrderDTO>> getAllOrders() {
         return ResponseEntity.ok(orderService.getAllOrders().stream()
                 .map(orderMapper::toDTO)
-                .collect(Collectors.toList()));
+                .toList());
     }
 
     // Обновить статус заказа (для администратора)

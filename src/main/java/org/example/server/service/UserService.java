@@ -29,6 +29,9 @@ public class UserService {
         }
         
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        if (user.getRoles() == null) {
+            user.setRoles(new java.util.HashSet<>());
+        }
         user.getRoles().add("ROLE_USER");
         return userRepository.save(user);
     }

@@ -11,4 +11,5 @@ public class UserDTO {
     private String address;
     private Set<String> roles;
     private boolean enabled;
+    private String password;
 } 

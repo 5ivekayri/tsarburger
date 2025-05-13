@@ -2,45 +2,53 @@ package org.example.server.service;
 
 import org.example.server.model.MenuItem;
 import org.example.server.repository.MenuItemRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class MenuService {
-    
+
     private final MenuItemRepository menuItemRepository;
 
-    @Autowired
     public MenuService(MenuItemRepository menuItemRepository) {
         this.menuItemRepository = menuItemRepository;
     }
 
-    // Получить все позиции меню
     public List<MenuItem> getAllMenuItems() {
         return menuItemRepository.findAll();
     }
 
-    // Получить позицию меню по ID
-    public Optional<MenuItem> getMenuItemById(String id) {
+    public Optional<MenuItem> getMenuItem(String id) {
         return menuItemRepository.findById(id);
     }
 
-    // Добавить новую позицию в меню
-    public MenuItem addMenuItem(MenuItem menuItem) {
+    public MenuItem createMenuItem(MenuItem menuItem) {
+        // Если imageBase64 не пустой, сохраняем его
         return menuItemRepository.save(menuItem);
     }
 
-    // Обновить существующую позицию в меню
-    public MenuItem updateMenuItem(String id, MenuItem menuItem) {
-        menuItem.setId(id);
-        return menuItemRepository.save(menuItem);
+    public Optional<MenuItem> updateMenuItem(String id, MenuItem menuItem) {
+        return menuItemRepository.findById(id)
+                .map(existingItem -> {
+                    existingItem.setName(menuItem.getName());
+                    existingItem.setDescription(menuItem.getDescription());
+                    existingItem.setPrice(menuItem.getPrice());
+                    existingItem.setCategory(menuItem.getCategory());
+                    existingItem.setAvailable(menuItem.isAvailable());
+                    existingItem.setImageUrl(menuItem.getImageUrl());
+                    existingItem.setImageBase64(menuItem.getImageBase64());
+                    return menuItemRepository.save(existingItem);
+                });
     }
 
-    // Удалить позицию из меню
-    public void deleteMenuItem(String id) {
-        menuItemRepository.deleteById(id);
+    public boolean deleteMenuItem(String id) {
+        if (menuItemRepository.existsById(id)) {
+            menuItemRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 
     // Получить доступные позиции меню

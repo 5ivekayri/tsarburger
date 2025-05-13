@@ -25,13 +25,23 @@ public class Order {
     
     @Indexed
     private String userId;
-    
+     
+    @Builder.Default
     private List<OrderItem> items = new ArrayList<>();
-    private double totalPrice;
-    private String status;
+    
+    @Builder.Default
+    private double totalPrice = 0.0;
+    
+    @Builder.Default
+    private OrderStatus status = OrderStatus.PENDING;
+    
     private String deliveryAddress;
     private String contactPhone;
+    
+    @Builder.Default
     private LocalDateTime orderTime = LocalDateTime.now();
+    
+    private LocalDateTime updatedAt;
 
     public enum OrderStatus {
         PENDING,
@@ -65,11 +75,11 @@ public class Order {
     }
 
     public boolean isCompleted() {
-        return OrderStatus.DELIVERED.name().equals(status);
+        return OrderStatus.DELIVERED.name().equals(status.name());
     }
 
     public boolean isCancelled() {
-        return OrderStatus.CANCELLED.name().equals(status);
+        return OrderStatus.CANCELLED.name().equals(status.name());
     }
 
     public boolean canBeCancelled() {
@@ -110,11 +120,11 @@ public class Order {
     }
 
     public String getStatus() {
-        return status;
+        return status.name();
     }
 
     public void setStatus(String status) {
-        this.status = status;
+        this.status = OrderStatus.valueOf(status);
     }
 
     public String getDeliveryAddress() {
@@ -139,5 +149,13 @@ public class Order {
 
     public void setOrderTime(LocalDateTime orderTime) {
         this.orderTime = orderTime;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 } 

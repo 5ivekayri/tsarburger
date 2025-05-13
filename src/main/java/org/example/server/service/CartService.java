@@ -7,6 +7,7 @@ import org.example.server.repository.CartRepository;
 import org.example.server.repository.MenuItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import java.util.ArrayList;
 import java.util.Optional;
 
 @Service
@@ -23,6 +24,12 @@ public class CartService {
 
     // Получить корзину пользователя
     public Cart getCart(String userId) {
+        if (userId == null) {
+            Cart emptyCart = new Cart();
+            emptyCart.setItems(new ArrayList<>());
+            emptyCart.setTotalPrice(0);
+            return emptyCart;
+        }
         return cartRepository.findByUserId(userId)
                 .orElseGet(() -> {
                     Cart newCart = new Cart();

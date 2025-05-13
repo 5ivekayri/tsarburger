@@ -17,9 +17,6 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
     @Value("${spring.data.mongodb.uri}")
     private String mongoUri;
 
-    @Value("${spring.data.mongodb.database}")
-    private String databaseName;
-
     @Override
     @NonNull
     public MongoClient mongoClient() {
@@ -29,7 +26,9 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
     @Override
     @NonNull
     protected String getDatabaseName() {
-        return databaseName;
+        // Извлекаем имя базы данных из URI
+        String[] parts = mongoUri.split("/");
+        return parts[parts.length - 1];
     }
 
     @Bean

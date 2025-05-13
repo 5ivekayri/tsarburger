@@ -8,9 +8,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/cart")
-@PreAuthorize("isAuthenticated()")
 public class CartController {
 
     private final CartService cartService;
@@ -23,21 +24,23 @@ public class CartController {
 
     // Получить корзину пользователя
     @GetMapping
-    public ResponseEntity<CartDTO> getCart(@RequestAttribute("userId") String userId) {
+    public ResponseEntity<CartDTO> getCart(@RequestAttribute(value = "userId", required = false) String userId) {
         return ResponseEntity.ok(cartMapper.toDTO(cartService.getCart(userId)));
     }
 
     // Добавить товар в корзину
     @PostMapping("/items")
     public ResponseEntity<CartDTO> addToCart(
-            @RequestAttribute("userId") String userId,
-            @RequestParam String menuItemId,
-            @RequestParam int quantity) {
+            @RequestAttribute(value = "userId", required = false) String userId,
+            @RequestBody Map<String, Object> payload) {
+        String menuItemId = (String) payload.get("menuItemId");
+        int quantity = (int) payload.getOrDefault("quantity", 1);
         return ResponseEntity.ok(cartMapper.toDTO(cartService.addToCart(userId, menuItemId, quantity)));
     }
 
     // Удалить товар из корзины
     @DeleteMapping("/items/{menuItemId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<CartDTO> removeFromCart(
             @RequestAttribute("userId") String userId,
             @PathVariable String menuItemId) {
@@ -46,6 +49,7 @@ public class CartController {
 
     // Обновить количество товара в корзине
     @PutMapping("/items/{menuItemId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<CartDTO> updateItemQuantity(
             @RequestAttribute("userId") String userId,
             @PathVariable String menuItemId,
@@ -55,6 +59,7 @@ public class CartController {
 
     // Очистить корзину
     @DeleteMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> clearCart(@RequestAttribute("userId") String userId) {
         cartService.clearCart(userId);
         return ResponseEntity.ok().build();

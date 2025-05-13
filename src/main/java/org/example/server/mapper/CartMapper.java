@@ -5,7 +5,6 @@ import org.example.server.dto.CartItemDTO;
 import org.example.server.model.Cart;
 import org.example.server.model.CartItem;
 import org.springframework.stereotype.Component;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
