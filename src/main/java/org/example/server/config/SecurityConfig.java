@@ -43,16 +43,10 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/menu/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/users/register").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/cart/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/cart/**").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/cart/**").authenticated()
-                .requestMatchers(HttpMethod.DELETE, "/api/cart/**").authenticated()
-                .requestMatchers("/api/orders/**").authenticated()
                 .anyRequest().authenticated()
             )
             .exceptionHandling(exception -> exception

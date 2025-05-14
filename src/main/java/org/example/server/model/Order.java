@@ -1,5 +1,10 @@
 package org.example.server.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
@@ -21,26 +26,38 @@ import java.util.List;
 @Document(collection = "orders")
 public class Order {
     @Id
+    @JsonProperty("id")
     private String id;
     
     @Indexed
+    @JsonProperty("userId")
     private String userId;
      
     @Builder.Default
+    @JsonProperty("items")
     private List<OrderItem> items = new ArrayList<>();
     
     @Builder.Default
-    private double totalPrice = 0.0;
+    @JsonProperty("totalAmount")
+    private double totalAmount = 0.0;
     
     @Builder.Default
+    @JsonProperty("status")
     private OrderStatus status = OrderStatus.PENDING;
     
+    @JsonProperty("deliveryAddress")
     private String deliveryAddress;
+    
+    @JsonProperty("contactPhone")
     private String contactPhone;
     
     @Builder.Default
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonProperty("orderTime")
     private LocalDateTime orderTime = LocalDateTime.now();
     
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonProperty("updatedAt")
     private LocalDateTime updatedAt;
 
     public enum OrderStatus {
@@ -50,7 +67,17 @@ public class Order {
         READY_FOR_DELIVERY,
         DELIVERING,
         DELIVERED,
-        CANCELLED
+        CANCELLED;
+
+        @JsonValue
+        public String toValue() {
+            return name();
+        }
+
+        @JsonCreator
+        public static OrderStatus forValue(String value) {
+            return value == null ? null : OrderStatus.valueOf(value);
+        }
     }
 
     public void addItem(OrderItem item) {
@@ -58,104 +85,35 @@ public class Order {
             items = new ArrayList<>();
         }
         items.add(item);
-        recalculateTotalPrice();
+        recalculateTotalAmount();
     }
 
     public void removeItem(OrderItem item) {
         if (items != null) {
             items.remove(item);
-            recalculateTotalPrice();
+            recalculateTotalAmount();
         }
     }
 
-    public void recalculateTotalPrice() {
-        this.totalPrice = items.stream()
+    @JsonIgnore
+    public void recalculateTotalAmount() {
+        this.totalAmount = items.stream()
                 .mapToDouble(item -> item.getPrice() * item.getQuantity())
                 .sum();
     }
 
+    @JsonIgnore
     public boolean isCompleted() {
-        return OrderStatus.DELIVERED.name().equals(status.name());
+        return status == OrderStatus.DELIVERED;
     }
 
+    @JsonIgnore
     public boolean isCancelled() {
-        return OrderStatus.CANCELLED.name().equals(status.name());
+        return status == OrderStatus.CANCELLED;
     }
 
+    @JsonIgnore
     public boolean canBeCancelled() {
         return !isCompleted() && !isCancelled();
-    }
-
-    // Геттеры и сеттеры
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    public List<OrderItem> getItems() {
-        return items;
-    }
-
-    public void setItems(List<OrderItem> items) {
-        this.items = items;
-    }
-
-    public double getTotalPrice() {
-        return totalPrice;
-    }
-
-    public void setTotalPrice(double totalPrice) {
-        this.totalPrice = totalPrice;
-    }
-
-    public String getStatus() {
-        return status.name();
-    }
-
-    public void setStatus(String status) {
-        this.status = OrderStatus.valueOf(status);
-    }
-
-    public String getDeliveryAddress() {
-        return deliveryAddress;
-    }
-
-    public void setDeliveryAddress(String deliveryAddress) {
-        this.deliveryAddress = deliveryAddress;
-    }
-
-    public String getContactPhone() {
-        return contactPhone;
-    }
-
-    public void setContactPhone(String contactPhone) {
-        this.contactPhone = contactPhone;
-    }
-
-    public LocalDateTime getOrderTime() {
-        return orderTime;
-    }
-
-    public void setOrderTime(LocalDateTime orderTime) {
-        this.orderTime = orderTime;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
     }
 } 

@@ -43,10 +43,10 @@ public class OrderService {
             })
             .collect(Collectors.toList());
         order.setItems(orderItems);
-        order.setTotalPrice(cart.getTotalPrice());
+        order.setTotalAmount(cart.getTotalPrice());
         order.setDeliveryAddress(deliveryAddress);
         order.setOrderTime(LocalDateTime.now());
-        order.setStatus(Order.OrderStatus.PENDING.name());
+        order.setStatus(Order.OrderStatus.PENDING);
 
         // Очищаем корзину после создания заказа
         cartService.clearCart(userId);
@@ -68,7 +68,7 @@ public class OrderService {
     // Обновить статус заказа
     public Order updateOrderStatus(String orderId, Order.OrderStatus status) {
         Order order = getOrder(orderId);
-        order.setStatus(status.name());
+        order.setStatus(status);
         return orderRepository.save(order);
     }
 
@@ -80,10 +80,10 @@ public class OrderService {
     // Отменить заказ
     public Order cancelOrder(String orderId) {
         Order order = getOrder(orderId);
-        if (order.getStatus().equals(Order.OrderStatus.DELIVERED.name())) {
+        if (order.getStatus() == Order.OrderStatus.DELIVERED) {
             throw new RuntimeException("Нельзя отменить доставленный заказ");
         }
-        order.setStatus(Order.OrderStatus.CANCELLED.name());
+        order.setStatus(Order.OrderStatus.CANCELLED);
         return orderRepository.save(order);
     }
 } 

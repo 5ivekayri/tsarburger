@@ -24,18 +24,45 @@ const App = () => {
   const [roles, setRoles] = useState([]);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    setIsAuthenticated(!!token);
-    if (token) {
-      fetchCartItemsCount();
-      const user = localStorage.getItem('user');
-      if (user) {
-        const parsed = JSON.parse(user);
-        setUsername(parsed.username);
-        setRoles(parsed.roles || []);
+    const autoLogin = async () => {
+      try {
+        // Пытаемся войти как админ
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            username: 'admin',
+            password: '111'
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('user', JSON.stringify(data.user));
+          setIsAuthenticated(true);
+          setUsername(data.user.username);
+          setRoles(data.user.roles || []);
+          fetchCartItemsCount();
+        }
+      } catch (error) {
+        console.error('Auto login failed:', error);
       }
+    };
+
+    // Проверяем, есть ли уже токен
+    const token = localStorage.getItem('token');
+    if (token) {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      setIsAuthenticated(true);
+      setUsername(user.username || '');
+      setRoles(user.roles || []);
+      fetchCartItemsCount();
     } else {
-      setUsername("");
+      // Если токена нет, пробуем автоматический вход
+      autoLogin();
     }
   }, []);
 
@@ -60,6 +87,8 @@ const App = () => {
     localStorage.removeItem('user');
     setIsAuthenticated(false);
     setCartItemsCount(0);
+    // После выхода сразу входим как админ
+    window.location.reload();
   };
 
   return (

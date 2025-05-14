@@ -36,14 +36,14 @@ const Auth = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-
-    const endpoint = tab === 0 ? '/api/auth/login' : '/api/auth/register';
-    const data = tab === 0 
-      ? { username: formData.username, password: formData.password }
-      : formData;
-
     try {
+      const endpoint = tab === 0 ? '/api/auth/login' : '/api/auth/register';
+      console.log('Sending request to:', endpoint);
+      const data = tab === 0 
+        ? { username: formData.username, password: formData.password }
+        : formData;
+      console.log('Request data:', data);
+
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
@@ -52,20 +52,22 @@ const Auth = () => {
         body: JSON.stringify(data)
       });
 
-      const result = await response.json();
-
       if (!response.ok) {
-        throw new Error(result.message || 'Ошибка авторизации');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Ошибка аутентификации');
       }
 
-      // Сохраняем токен и информацию о пользователе
-      localStorage.setItem('token', result.token);
-      localStorage.setItem('user', JSON.stringify(result.user));
+      const result = await response.json();
+      console.log('Response:', result);
 
-      // Перенаправляем на главную страницу
-      navigate('/');
-    } catch (err) {
-      setError(err.message);
+      if (result.token) {
+        localStorage.setItem('token', result.token);
+        localStorage.setItem('user', JSON.stringify(result.user));
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Auth error:', error);
+      setError(error.message || 'Произошла ошибка при входе');
     }
   };
 

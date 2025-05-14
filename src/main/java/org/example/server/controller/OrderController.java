@@ -3,6 +3,7 @@ package org.example.server.controller;
 import org.example.server.model.Order;
 import org.example.server.service.OrderService;
 import org.example.server.dto.OrderDTO;
+import org.example.server.dto.CreateOrderRequest;
 import org.example.server.mapper.OrderMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,8 +28,8 @@ public class OrderController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<OrderDTO> createOrder(
             @RequestAttribute("userId") String userId,
-            @RequestParam String deliveryAddress) {
-        return ResponseEntity.ok(orderMapper.toDTO(orderService.createOrder(userId, deliveryAddress)));
+            @RequestBody CreateOrderRequest request) {
+        return ResponseEntity.ok(orderMapper.toDTO(orderService.createOrder(userId, request.getDeliveryAddress())));
     }
 
     // Получить заказ по ID

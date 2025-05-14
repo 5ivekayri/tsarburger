@@ -87,14 +87,26 @@ public class DataInitializer {
             menuItemRepository.save(nuggets);
 
             // Создание админа, если его нет
+            System.out.println("Checking for admin account...");
             if (userRepository.findByUsername("admin").isEmpty()) {
+                System.out.println("Admin account not found, creating new one...");
                 User admin = new User();
                 admin.setUsername("admin");
-                admin.setPassword(passwordEncoder.encode("111"));
+                String rawPassword = "111";
+                String encodedPassword = passwordEncoder.encode(rawPassword);
+                System.out.println("Raw password: " + rawPassword);
+                System.out.println("Encoded password: " + encodedPassword);
+                admin.setPassword(encodedPassword);
                 admin.setEmail("admin@burger.com");
+                admin.setFullName("System Administrator");
+                admin.setPhoneNumber("+7 (999) 999-99-99");
+                admin.setAddress("System Address");
                 admin.setRoles(new HashSet<>(List.of("ROLE_ADMIN")));
                 admin.setEnabled(true);
-                userRepository.save(admin);
+                User savedAdmin = userRepository.save(admin);
+                System.out.println("Admin account created successfully! ID: " + savedAdmin.getId());
+            } else {
+                System.out.println("Admin account already exists!");
             }
         };
     }

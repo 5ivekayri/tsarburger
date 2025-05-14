@@ -34,19 +34,27 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
-        );
-        
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        User user = (User) authentication.getPrincipal();
-        String token = jwtTokenProvider.generateToken(user);
-        
-        Map<String, Object> response = new HashMap<>();
-        response.put("token", token);
-        response.put("user", userMapper.toDTO(user));
-        
-        return ResponseEntity.ok(response);
+        System.out.println("Attempting login for user: " + loginRequest.getUsername());
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
+            );
+            
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            User user = (User) authentication.getPrincipal();
+            System.out.println("Login successful for user: " + user.getUsername() + " with roles: " + user.getRoles());
+            
+            String token = jwtTokenProvider.generateToken(user);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("token", token);
+            response.put("user", userMapper.toDTO(user));
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            System.out.println("Login failed for user: " + loginRequest.getUsername() + ". Error: " + e.getMessage());
+            throw e;
+        }
     }
 
     @PostMapping("/register")
