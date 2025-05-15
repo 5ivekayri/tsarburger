@@ -12,10 +12,26 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
-const Orders = () => {
-  const [orders, setOrders] = useState([]);
+interface OrderItem {
+  id: string;
+  name: string;
+  quantity: number;
+  price: number;
+}
+
+interface Order {
+  id: string;
+  status: string;
+  deliveryAddress: string;
+  createdAt: string;
+  items: OrderItem[];
+  totalAmount: number;
+}
+
+const Orders: React.FC = () => {
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -43,13 +59,13 @@ const Orders = () => {
       const data = await response.json();
       setOrders(data);
     } catch (err) {
-      setError(err.message);
+      setError(err instanceof Error ? err.message : 'Ошибка при загрузке заказов');
     } finally {
       setLoading(false);
     }
   };
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: string): "warning" | "info" | "success" | "default" => {
     switch (status) {
       case 'PENDING':
         return 'warning';

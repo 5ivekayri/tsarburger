@@ -12,7 +12,11 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
-const Auth = () => {
+interface AuthProps {
+  onLogin: (user: { username: string; roles: string[] }) => void;
+}
+
+const Auth: React.FC<AuthProps> = ({ onLogin }) => {
   const [tab, setTab] = useState(0);
   const [formData, setFormData] = useState({
     username: '',
@@ -22,19 +26,19 @@ const Auth = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleTabChange = (event, newValue) => {
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTab(newValue);
     setError('');
   };
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const endpoint = tab === 0 ? '/api/auth/login' : '/api/auth/register';
@@ -63,11 +67,12 @@ const Auth = () => {
       if (result.token) {
         localStorage.setItem('token', result.token);
         localStorage.setItem('user', JSON.stringify(result.user));
+        onLogin(result.user);
         navigate('/');
       }
     } catch (error) {
       console.error('Auth error:', error);
-      setError(error.message || 'Произошла ошибка при входе');
+      setError(error instanceof Error ? error.message : 'Произошла ошибка при входе');
     }
   };
 

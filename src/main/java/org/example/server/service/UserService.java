@@ -32,6 +32,10 @@ public class UserService {
         if (user.getRoles() == null) {
             user.setRoles(new java.util.HashSet<>());
         }
+        // Убедимся, что роль имеет префикс ROLE_
+        if (!user.getRoles().contains("ROLE_USER")) {
+            user.getRoles().add("ROLE_USER");
+        }
         user.getRoles().add("ROLE_USER");
         return userRepository.save(user);
     }

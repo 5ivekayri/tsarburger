@@ -15,16 +15,28 @@ import {
 import { Delete as DeleteIcon, Add as AddIcon, Remove as RemoveIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
-const Cart = () => {
-  const [cartItems, setCartItems] = useState([]);
+interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+}
+
+interface User {
+  id: string;
+  address?: string;
+}
+
+const Cart: React.FC = () => {
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const [address, setAddress] = useState("");
 
   useEffect(() => {
     fetchCart();
-    const user = JSON.parse(localStorage.getItem('user'));
+    const user = JSON.parse(localStorage.getItem('user') || '{}') as User;
     if (user && user.address) setAddress(user.address);
   }, []);
 
@@ -49,13 +61,13 @@ const Cart = () => {
       const data = await response.json();
       setCartItems(data.items || []);
     } catch (err) {
-      setError(err.message);
+      setError(err instanceof Error ? err.message : 'Ошибка при загрузке корзины');
     } finally {
       setLoading(false);
     }
   };
 
-  const updateQuantity = async (itemId, newQuantity) => {
+  const updateQuantity = async (itemId: string, newQuantity: number) => {
     if (newQuantity < 1) return;
 
     const token = localStorage.getItem('token');
@@ -79,7 +91,7 @@ const Cart = () => {
     }
   };
 
-  const removeItem = async (itemId) => {
+  const removeItem = async (itemId: string) => {
     const token = localStorage.getItem('token');
     try {
       const response = await fetch(`/api/cart/items/${itemId}`, {
@@ -101,7 +113,7 @@ const Cart = () => {
 
   const createOrder = async () => {
     const token = localStorage.getItem('token');
-    const user = JSON.parse(localStorage.getItem('user'));
+    const user = JSON.parse(localStorage.getItem('user') || '{}') as User;
     let actualAddress = address;
     if (!actualAddress) {
       const input = prompt('Пожалуйста, введите адрес доставки:');
@@ -161,7 +173,7 @@ const Cart = () => {
           <Paper elevation={3} sx={{ mb: 3 }}>
             <List>
               {cartItems.map((item) => (
-                <React.Fragment key={item.id || item._id}>
+                <React.Fragment key={item.id}>
                   <ListItem>
                     <ListItemText
                       primary={item.name}

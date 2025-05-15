@@ -24,58 +24,49 @@ const App = () => {
   const [roles, setRoles] = useState([]);
 
   useEffect(() => {
-    const autoLogin = async () => {
-      try {
-        // Пытаемся войти как админ
-        const response = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            username: 'admin',
-            password: '111'
-          })
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          localStorage.setItem('token', data.token);
-          localStorage.setItem('user', JSON.stringify(data.user));
-          setIsAuthenticated(true);
-          setUsername(data.user.username);
-          setRoles(data.user.roles || []);
-          fetchCartItemsCount();
-        }
-      } catch (error) {
-        console.error('Auto login failed:', error);
-      }
-    };
-
-    // Проверяем, есть ли уже токен
+    // Проверяем только существующий токен, без автоматического входа
     const token = localStorage.getItem('token');
     if (token) {
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      setIsAuthenticated(true);
-      setUsername(user.username || '');
-      setRoles(user.roles || []);
-      fetchCartItemsCount();
-    } else {
-      // Если токена нет, пробуем автоматический вход
-      autoLogin();
+      try {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        setIsAuthenticated(true);
+        setUsername(user.username || '');
+        setRoles(user.roles || []);
+        fetchCartItemsCount();
+      } catch (error) {
+        console.error('Error parsing stored user data:', error);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
     }
   }, []);
 
   const fetchCartItemsCount = async () => {
     try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('No token found');
+        return;
+      }
+
+      console.log('Fetching cart with token:', token);
       const response = await fetch('/api/cart', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
       });
+
       if (response.ok) {
         const data = await response.json();
         setCartItemsCount(data.items?.length || 0);
+      } else if (response.status === 401) {
+        console.error('Unauthorized access to cart');
+        handleLogout();
+      } else {
+        console.error('Error fetching cart:', response.status);
       }
     } catch (error) {
       console.error('Error fetching cart items count:', error);
@@ -86,9 +77,10 @@ const App = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setIsAuthenticated(false);
+    setUsername('');
+    setRoles([]);
     setCartItemsCount(0);
-    // После выхода сразу входим как админ
-    window.location.reload();
+    navigate('/login');
   };
 
   return (

@@ -16,6 +16,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.lang.NonNull;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Фильтр для обработки JWT токенов в запросах.
@@ -42,35 +44,59 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
         String path = request.getRequestURI();
-        // Пропускаем публичные эндпоинты без проверки JWT
-        if (path.startsWith("/api/menu") || path.startsWith("/api/auth")) {
+        logger.debug("Processing request for path: {}", path);
+        
+        // Пропускаем только публичные GET запросы к меню и эндпоинты аутентификации
+        if ((path.startsWith("/api/menu") && request.getMethod().equals("GET")) || 
+            path.startsWith("/api/auth")) {
+            logger.debug("Skipping JWT validation for public endpoint: {}", path);
             filterChain.doFilter(request, response);
             return;
         }
+
         try {
             String jwt = getJwtFromRequest(request);
-
+            logger.debug("JWT token from request: {}", jwt != null ? "present" : "missing");
+            
             if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
                 String username = tokenProvider.getUsernameFromJWT(jwt);
-                String userId = tokenProvider.getUserIdFromJWT(jwt);
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                List<String> roles = tokenProvider.getRolesFromJWT(jwt);
+                logger.debug("Token validated for user: {} with roles: {}", username, roles);
                 
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                logger.debug("Установлена аутентификация для пользователя: {}", username);
-                // Устанавливаем userId из токена
-                if (userId != null) {
-                    request.setAttribute("userId", userId);
+                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    
+                    // Проверяем, что роли в токене совпадают с ролями пользователя
+                    if (userDetails != null && roles.containsAll(userDetails.getAuthorities().stream()
+                            .map(auth -> auth.getAuthority())
+                            .collect(Collectors.toList()))) {
+                        
+                        UsernamePasswordAuthenticationToken authentication = 
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                        logger.debug("Authentication set for user: {} with roles: {}", username, roles);
+                    } else {
+                        logger.warn("Token roles do not match user roles for user: {}", username);
+                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        response.getWriter().write("{\"error\": \"Unauthorized\", \"message\": \"Invalid token roles\"}");
+                        return;
+                    }
                 }
+            } else {
+                logger.warn("Invalid or missing JWT token for path: {}", path);
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("{\"error\": \"Unauthorized\", \"message\": \"Invalid or missing token\"}");
+                return;
             }
         } catch (Exception ex) {
-            logger.error("Не удалось установить аутентификацию пользователя в контексте безопасности", ex);
-            SecurityContextHolder.clearContext();
+            logger.error("Could not set user authentication in security context", ex);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("{\"error\": \"Unauthorized\", \"message\": \"Authentication failed\"}");
+            return;
         }
-
+        
         filterChain.doFilter(request, response);
     }
 
@@ -82,6 +108,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      */
     private String getJwtFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
+        logger.debug("Authorization header: {}", bearerToken);
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
             return bearerToken.substring(BEARER_PREFIX_LENGTH);
         }

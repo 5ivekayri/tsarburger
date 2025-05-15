@@ -2,6 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Card, Grid, Typography, Button, Container, Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
+interface MenuItem {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  imageUrl: string;
+}
+
 const MenuItemCard = styled(Card)({
   height: '100%',
   display: 'flex',
@@ -18,10 +26,10 @@ const MenuImage = styled('img')({
   objectFit: 'cover',
 });
 
-const Menu = () => {
-  const [menuItems, setMenuItems] = useState([]);
+const Menu: React.FC = () => {
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchMenuItems();
@@ -36,16 +44,15 @@ const Menu = () => {
       const data = await response.json();
       setMenuItems(data);
     } catch (err) {
-      setError(err.message);
+      setError(err instanceof Error ? err.message : 'Ошибка при загрузке меню');
     } finally {
       setLoading(false);
     }
   };
 
-  const addToCart = async (itemId) => {
+  const addToCart = async (itemId: string) => {
     const token = localStorage.getItem('token');
     if (!token) {
-      // Перенаправляем на страницу входа, если пользователь не авторизован
       window.location.href = '/login';
       return;
     }
@@ -67,7 +74,6 @@ const Menu = () => {
         throw new Error('Failed to add item to cart');
       }
 
-      // Показываем уведомление об успешном добавлении
       alert('Товар добавлен в корзину!');
     } catch (err) {
       alert('Ошибка при добавлении товара в корзину');
