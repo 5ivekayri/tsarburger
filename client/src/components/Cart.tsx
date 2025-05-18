@@ -10,16 +10,25 @@ import {
   Button,
   Paper,
   Box,
-  Divider
+  Divider,
+  Snackbar,
+  Alert
 } from '@mui/material';
 import { Delete as DeleteIcon, Add as AddIcon, Remove as RemoveIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
 interface CartItem {
-  id: string;
+  menuItemId: string;
   name: string;
   price: number;
   quantity: number;
+}
+
+interface CartData {
+  id: string;
+  userId: string;
+  items: CartItem[];
+  totalPrice: number;
 }
 
 interface User {
@@ -31,6 +40,11 @@ const Cart: React.FC = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [notification, setNotification] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
   const navigate = useNavigate();
   const [address, setAddress] = useState("");
 
@@ -48,6 +62,7 @@ const Cart: React.FC = () => {
     }
 
     try {
+      console.log('Fetching cart...');
       const response = await fetch('/api/cart', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -58,9 +73,17 @@ const Cart: React.FC = () => {
         throw new Error('Failed to fetch cart');
       }
 
-      const data = await response.json();
-      setCartItems(data.items || []);
+      const data: CartData = await response.json();
+      console.log('Received cart data:', data);
+      
+      if (data && Array.isArray(data.items)) {
+        setCartItems(data.items);
+      } else {
+        console.error('Invalid cart data format:', data);
+        setCartItems([]);
+      }
     } catch (err) {
+      console.error('Error fetching cart:', err);
       setError(err instanceof Error ? err.message : 'Ошибка при загрузке корзины');
     } finally {
       setLoading(false);
@@ -72,28 +95,39 @@ const Cart: React.FC = () => {
 
     const token = localStorage.getItem('token');
     try {
-      const response = await fetch(`/api/cart/items/${itemId}`, {
+      console.log(`Updating quantity for item ${itemId} to ${newQuantity}`);
+      const response = await fetch(`/api/cart/items/${itemId}?quantity=${newQuantity}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ quantity: newQuantity })
+        }
       });
 
       if (!response.ok) {
         throw new Error('Failed to update quantity');
       }
 
+      setNotification({
+        open: true,
+        message: 'Количество обновлено',
+        severity: 'success'
+      });
       fetchCart();
     } catch (err) {
-      alert('Ошибка при обновлении количества');
+      console.error('Error updating quantity:', err);
+      setNotification({
+        open: true,
+        message: 'Ошибка при обновлении количества',
+        severity: 'error'
+      });
     }
   };
 
   const removeItem = async (itemId: string) => {
     const token = localStorage.getItem('token');
     try {
+      console.log(`Removing item ${itemId}`);
       const response = await fetch(`/api/cart/items/${itemId}`, {
         method: 'DELETE',
         headers: {
@@ -105,10 +139,24 @@ const Cart: React.FC = () => {
         throw new Error('Failed to remove item');
       }
 
+      setNotification({
+        open: true,
+        message: 'Товар удален из корзины',
+        severity: 'success'
+      });
       fetchCart();
     } catch (err) {
-      alert('Ошибка при удалении товара');
+      console.error('Error removing item:', err);
+      setNotification({
+        open: true,
+        message: 'Ошибка при удалении товара',
+        severity: 'error'
+      });
     }
+  };
+
+  const handleCloseNotification = () => {
+    setNotification(prev => ({ ...prev, open: false }));
   };
 
   const createOrder = async () => {
@@ -173,7 +221,7 @@ const Cart: React.FC = () => {
           <Paper elevation={3} sx={{ mb: 3 }}>
             <List>
               {cartItems.map((item) => (
-                <React.Fragment key={item.id}>
+                <React.Fragment key={item.menuItemId}>
                   <ListItem>
                     <ListItemText
                       primary={item.name}
@@ -182,19 +230,19 @@ const Cart: React.FC = () => {
                     <ListItemSecondaryAction>
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <IconButton
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          onClick={() => updateQuantity(item.menuItemId, item.quantity - 1)}
                         >
                           <RemoveIcon />
                         </IconButton>
                         <Typography sx={{ mx: 2 }}>{item.quantity}</Typography>
                         <IconButton
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          onClick={() => updateQuantity(item.menuItemId, item.quantity + 1)}
                         >
                           <AddIcon />
                         </IconButton>
                         <IconButton
                           edge="end"
-                          onClick={() => removeItem(item.id)}
+                          onClick={() => removeItem(item.menuItemId)}
                           sx={{ ml: 2 }}
                         >
                           <DeleteIcon />
@@ -223,6 +271,16 @@ const Cart: React.FC = () => {
           </Box>
         </>
       )}
+      <Snackbar 
+        open={notification.open} 
+        autoHideDuration={3000} 
+        onClose={handleCloseNotification}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseNotification} severity={notification.severity}>
+          {notification.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

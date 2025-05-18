@@ -76,6 +76,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         
                         SecurityContextHolder.getContext().setAuthentication(authentication);
+                        // Добавляем userId в request attribute
+                        String userId = tokenProvider.getUserIdFromJWT(jwt);
+                        request.setAttribute("userId", userId);
                         logger.debug("Authentication set for user: {} with roles: {}", username, roles);
                     } else {
                         logger.warn("Token roles do not match user roles for user: {}", username);

@@ -30,10 +30,17 @@ public class CartController {
 
     // Добавить товар в корзину
     @PostMapping("/items")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<CartDTO> addToCart(
-            @RequestAttribute(value = "userId", required = false) String userId,
+            @RequestAttribute("userId") String userId,
             @RequestBody Map<String, Object> payload) {
+        if (userId == null) {
+            return ResponseEntity.badRequest().build();
+        }
         String menuItemId = (String) payload.get("menuItemId");
+        if (menuItemId == null) {
+            return ResponseEntity.badRequest().build();
+        }
         int quantity = (int) payload.getOrDefault("quantity", 1);
         return ResponseEntity.ok(cartMapper.toDTO(cartService.addToCart(userId, menuItemId, quantity)));
     }

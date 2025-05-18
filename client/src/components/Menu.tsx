@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Grid, Typography, Button, Container, Box } from '@mui/material';
+import { Card, Grid, Typography, Button, Container, Box, Snackbar, Alert } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import { useNavigate } from 'react-router-dom';
 
 interface MenuItem {
   id: string;
   name: string;
   description: string;
   price: number;
-  imageUrl: string;
+  imageUrl?: string;
+  imageBase64?: string;
 }
 
 const MenuItemCard = styled(Card)({
@@ -30,6 +32,12 @@ const Menu: React.FC = () => {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [notification, setNotification] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchMenuItems();
@@ -58,6 +66,7 @@ const Menu: React.FC = () => {
     }
 
     try {
+      console.log('Adding item to cart:', itemId);
       const response = await fetch('/api/cart/items', {
         method: 'POST',
         headers: {
@@ -71,13 +80,34 @@ const Menu: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to add item to cart');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Ошибка при добавлении в корзину: ${response.status}`);
       }
 
-      alert('Товар добавлен в корзину!');
+      const data = await response.json();
+      console.log('Cart update response:', data);
+
+      setNotification({
+        open: true,
+        message: 'Товар успешно добавлен в корзину!',
+        severity: 'success'
+      });
+
+      setTimeout(() => {
+        navigate('/cart');
+      }, 1000);
     } catch (err) {
-      alert('Ошибка при добавлении товара в корзину');
+      console.error('Ошибка при добавлении в корзину:', err);
+      setNotification({
+        open: true,
+        message: err instanceof Error ? err.message : 'Ошибка при добавлении товара в корзину',
+        severity: 'error'
+      });
     }
+  };
+
+  const handleCloseNotification = () => {
+    setNotification(prev => ({ ...prev, open: false }));
   };
 
   if (loading) return <Typography>Загрузка меню...</Typography>;
@@ -92,7 +122,14 @@ const Menu: React.FC = () => {
         {menuItems.map((item) => (
           <Grid item key={item.id} xs={12} sm={6} md={4}>
             <MenuItemCard>
-              <MenuImage src={item.imageUrl} alt={item.name} />
+              <MenuImage 
+                src={item.imageBase64 || item.imageUrl} 
+                alt={item.name} 
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = '/placeholder-image.jpg'; // Fallback image
+                }}
+              />
               <Box sx={{ p: 2 }}>
                 <Typography variant="h6" component="h2" gutterBottom>
                   {item.name}
@@ -117,8 +154,18 @@ const Menu: React.FC = () => {
           </Grid>
         ))}
       </Grid>
+      <Snackbar 
+        open={notification.open} 
+        autoHideDuration={3000} 
+        onClose={handleCloseNotification}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseNotification} severity={notification.severity}>
+          {notification.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };
 
-export default Menu; 
+export default Menu;
