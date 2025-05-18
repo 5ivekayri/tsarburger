@@ -127,36 +127,24 @@ const AdminPanel: React.FC = () => {
   };
 
   useEffect(() => {
-    const init = async () => {
-      if (!token) {
+    const checkAdminRole = () => {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const hasAdminRole = user.roles?.includes('ROLE_ADMIN');
+      if (!hasAdminRole) {
+        setError('Нет прав для доступа к админ-панели. Требуется роль ADMIN.');
         return;
       }
-
-      try {
-        const response = await fetch('/api/menu', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        if (!response.ok) {
-          if (response.status === 401) {
-            setError('Сессия истекла. Пожалуйста, войдите снова.');
-            return;
-          }
-          throw new Error('Ошибка при загрузке меню');
-        }
-
-        const data = await response.json();
-        setMenuItems(data);
-        await fetchUsers();
-      } catch (error) {
-        console.error('Error initializing admin panel:', error);
-        setError('Ошибка при загрузке меню');
-      }
+      // Если есть права админа, загружаем данные
+      fetchMenu();
+      fetchUsers();
+      fetchOrders();
     };
 
-    init();
+    if (token) {
+      checkAdminRole();
+    } else {
+      setError('Требуется авторизация');
+    }
   }, [token]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -170,6 +158,7 @@ const AdminPanel: React.FC = () => {
 
   const fetchUsers = async () => {
     try {
+      console.log('Fetching users with token:', token);
       const response = await fetch('/api/users', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -178,18 +167,21 @@ const AdminPanel: React.FC = () => {
       });
       
       if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        console.error('Server response:', errorData);
         if (response.status === 401) {
-          setError('Сессия истекла. Пожалуйста, войдите снова.');
+          setError('Нет прав для просмотра пользователей. Требуется роль ADMIN.');
           return;
         }
-        throw new Error('Ошибка при загрузке пользователей');
+        throw new Error(errorData?.message || 'Ошибка при загрузке пользователей');
       }
       
       const data = await response.json();
+      console.log('Users loaded:', data);
       setUsers(data);
     } catch (error) {
       console.error('Error fetching users:', error);
-      setError('Ошибка при загрузке пользователей');
+      setError(error instanceof Error ? error.message : 'Ошибка при загрузке пользователей');
     }
   };
 
@@ -232,6 +224,7 @@ const AdminPanel: React.FC = () => {
     if (!selectedUser) return;
 
     try {
+      console.log('Saving user:', selectedUser);
       const response = await fetch(`/api/users/${selectedUser.id}`, {
         method: 'PUT',
         headers: {
@@ -242,13 +235,22 @@ const AdminPanel: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Ошибка при обновлении пользователя');
+        const errorData = await response.json().catch(() => null);
+        console.error('Server response:', errorData);
+        if (response.status === 401) {
+          setError('Сессия истекла. Пожалуйста, войдите снова.');
+          return;
+        }
+        throw new Error(errorData?.message || 'Ошибка при обновлении пользователя');
       }
 
+      const updatedUser = await response.json();
+      console.log('User updated:', updatedUser);
       setUserDialogOpen(false);
-      fetchUsers();
+      await fetchUsers();
     } catch (error) {
-      setError('Ошибка при обновлении пользователя');
+      console.error('Error updating user:', error);
+      setError(error instanceof Error ? error.message : 'Ошибка при обновлении пользователя');
     }
   };
 
@@ -291,6 +293,7 @@ const AdminPanel: React.FC = () => {
     if (!window.confirm('Вы уверены, что хотите удалить этого пользователя?')) return;
 
     try {
+      console.log('Deleting user:', userId);
       const response = await fetch(`/api/users/${userId}`, {
         method: 'DELETE',
         headers: {
@@ -300,12 +303,20 @@ const AdminPanel: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Ошибка при удалении пользователя');
+        const errorData = await response.json().catch(() => null);
+        console.error('Server response:', errorData);
+        if (response.status === 401) {
+          setError('Сессия истекла. Пожалуйста, войдите снова.');
+          return;
+        }
+        throw new Error(errorData?.message || 'Ошибка при удалении пользователя');
       }
 
-      fetchUsers();
+      console.log('User deleted successfully');
+      await fetchUsers();
     } catch (error) {
-      setError('Ошибка при удалении пользователя');
+      console.error('Error deleting user:', error);
+      setError(error instanceof Error ? error.message : 'Ошибка при удалении пользователя');
     }
   };
 

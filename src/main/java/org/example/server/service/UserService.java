@@ -5,6 +5,7 @@ import org.example.server.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -55,6 +56,11 @@ public class UserService {
         return userRepository.findById(id);
     }
 
+    // Получить всех пользователей
+    public List<User> findAll() {
+        return userRepository.findAll();
+    }
+
     // Обновить данные пользователя
     public User updateUser(String id, User user) {
         User existingUser = userRepository.findById(id)
@@ -75,5 +81,13 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
         user.getRoles().add("ROLE_ADMIN");
         return userRepository.save(user);
+    }
+
+    // Удалить пользователя
+    public void deleteUser(String id) {
+        if (!userRepository.existsById(id)) {
+            throw new RuntimeException("Пользователь не найден");
+        }
+        userRepository.deleteById(id);
     }
 }
