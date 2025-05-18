@@ -30,14 +30,10 @@ public class UserService {
         }
         
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        if (user.getRoles() == null) {
+        if (user.getRoles() == null || user.getRoles().isEmpty()) {
             user.setRoles(new java.util.HashSet<>());
-        }
-        // Убедимся, что роль имеет префикс ROLE_
-        if (!user.getRoles().contains("ROLE_USER")) {
             user.getRoles().add("ROLE_USER");
         }
-        user.getRoles().add("ROLE_USER");
         return userRepository.save(user);
     }
 
@@ -85,9 +81,17 @@ public class UserService {
 
     // Удалить пользователя
     public void deleteUser(String id) {
+        System.out.println("Attempting to delete user with ID: " + id);
         if (!userRepository.existsById(id)) {
+            System.out.println("User not found with ID: " + id);
             throw new RuntimeException("Пользователь не найден");
         }
-        userRepository.deleteById(id);
+        try {
+            userRepository.deleteById(id);
+            System.out.println("Successfully deleted user with ID: " + id);
+        } catch (Exception e) {
+            System.out.println("Error deleting user with ID: " + id + ". Error: " + e.getMessage());
+            throw new RuntimeException("Ошибка при удалении пользователя: " + e.getMessage());
+        }
     }
 }

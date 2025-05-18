@@ -68,4 +68,12 @@ public class UserController {
     public ResponseEntity<UserDTO> makeAdmin(@PathVariable String id) {
         return ResponseEntity.ok(userMapper.toDTO(userService.makeAdmin(id)));
     }
+
+    // Удалить пользователя
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteUser(@PathVariable String id) {
+        userService.deleteUser(id);
+        return ResponseEntity.ok().build();
+    }
 } 

@@ -309,10 +309,15 @@ const AdminPanel: React.FC = () => {
           setError('Сессия истекла. Пожалуйста, войдите снова.');
           return;
         }
+        if (response.status === 403) {
+          setError('У вас нет прав для удаления пользователей.');
+          return;
+        }
         throw new Error(errorData?.message || 'Ошибка при удалении пользователя');
       }
 
       console.log('User deleted successfully');
+      setError('');
       await fetchUsers();
     } catch (error) {
       console.error('Error deleting user:', error);

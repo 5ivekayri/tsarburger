@@ -10,7 +10,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,15 +38,19 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         System.out.println("Attempting login for user: " + loginRequest.getUsername());
         try {
-            Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
-            );
+            System.out.println("Creating authentication token...");
+            UsernamePasswordAuthenticationToken authToken = 
+                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword());
+            System.out.println("Attempting authentication...");
+            Authentication authentication = authenticationManager.authenticate(authToken);
             
+            System.out.println("Authentication successful, setting security context...");
             SecurityContextHolder.getContext().setAuthentication(authentication);
             User user = (User) authentication.getPrincipal();
             System.out.println("Login successful for user: " + user.getUsername() + " with roles: " + user.getRoles());
             
             String token = jwtTokenProvider.generateToken(user);
+            System.out.println("Generated JWT token: " + token);
             
             Map<String, Object> response = new HashMap<>();
             response.put("token", token);
@@ -53,7 +59,13 @@ public class AuthController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             System.out.println("Login failed for user: " + loginRequest.getUsername() + ". Error: " + e.getMessage());
-            throw e;
+            e.printStackTrace();
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Authentication failed");
+            errorResponse.put("message", "Invalid username or password");
+            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(errorResponse);
         }
     }
 
