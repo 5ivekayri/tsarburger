@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Grid, Typography, Button, Container, Box, Snackbar, Alert } from '@mui/material';
+import { 
+  Card, Grid, Typography, Button, Container, Box, Snackbar, Alert,
+  FormControl, InputLabel, Select, MenuItem, SelectChangeEvent,
+  ButtonGroup, Pagination
+} from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 
 interface MenuItem {
   id: string;
@@ -10,6 +16,7 @@ interface MenuItem {
   price: number;
   imageUrl?: string;
   imageBase64?: string;
+  category: string;
 }
 
 const MenuItemCard = styled(Card)({
@@ -30,6 +37,11 @@ const MenuImage = styled('img')({
 
 const Menu: React.FC = () => {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [filteredItems, setFilteredItems] = useState<MenuItem[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('Все');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [notification, setNotification] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
@@ -39,9 +51,41 @@ const Menu: React.FC = () => {
   });
   const navigate = useNavigate();
 
+  const categories = ['Все', 'Бургеры', 'Напитки', 'Сайды'];
+
   useEffect(() => {
     fetchMenuItems();
   }, []);
+
+  useEffect(() => {
+    let result = [...menuItems];
+    
+    // Фильтрация по категории
+    if (selectedCategory !== 'Все') {
+      result = result.filter(item => item.category === selectedCategory);
+    }
+    
+    // Сортировка по цене
+    if (sortOrder) {
+      result.sort((a, b) => {
+        return sortOrder === 'asc' ? a.price - b.price : b.price - a.price;
+      });
+    }
+    
+    setFilteredItems(result);
+    setCurrentPage(1); // Сбрасываем страницу при изменении фильтров
+  }, [menuItems, selectedCategory, sortOrder]);
+
+  // Вычисляем текущие элементы для отображения
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredItems.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+
+  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+    setCurrentPage(value);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const fetchMenuItems = async () => {
     try {
@@ -51,11 +95,20 @@ const Menu: React.FC = () => {
       }
       const data = await response.json();
       setMenuItems(data);
+      setFilteredItems(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ошибка при загрузке меню');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCategoryChange = (event: SelectChangeEvent) => {
+    setSelectedCategory(event.target.value);
+  };
+
+  const handleSortChange = (order: 'asc' | 'desc' | null) => {
+    setSortOrder(order);
   };
 
   const addToCart = async (itemId: string) => {
@@ -118,8 +171,49 @@ const Menu: React.FC = () => {
       <Typography variant="h3" component="h1" gutterBottom align="center">
         Меню
       </Typography>
+
+      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <FormControl sx={{ minWidth: 200 }}>
+          <InputLabel>Категория</InputLabel>
+          <Select
+            value={selectedCategory}
+            label="Категория"
+            onChange={handleCategoryChange}
+          >
+            {categories.map((category) => (
+              <MenuItem key={category} value={category}>
+                {category}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <ButtonGroup variant="outlined" aria-label="sort buttons">
+          <Button
+            onClick={() => handleSortChange('asc')}
+            startIcon={<ArrowUpwardIcon />}
+            color={sortOrder === 'asc' ? 'primary' : 'inherit'}
+          >
+            По возрастанию
+          </Button>
+          <Button
+            onClick={() => handleSortChange('desc')}
+            startIcon={<ArrowDownwardIcon />}
+            color={sortOrder === 'desc' ? 'primary' : 'inherit'}
+          >
+            По убыванию
+          </Button>
+          <Button
+            onClick={() => handleSortChange(null)}
+            color={sortOrder === null ? 'primary' : 'inherit'}
+          >
+            Сбросить
+          </Button>
+        </ButtonGroup>
+      </Box>
+
       <Grid container spacing={4}>
-        {menuItems.map((item) => (
+        {currentItems.map((item) => (
           <Grid item key={item.id} xs={12} sm={6} md={4}>
             <MenuItemCard>
               <MenuImage 
@@ -127,7 +221,7 @@ const Menu: React.FC = () => {
                 alt={item.name} 
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
-                  target.src = '/placeholder-image.jpg'; // Fallback image
+                  target.src = '/placeholder-image.jpg';
                 }}
               />
               <Box sx={{ p: 2 }}>
@@ -136,6 +230,9 @@ const Menu: React.FC = () => {
                 </Typography>
                 <Typography variant="body2" color="text.secondary" paragraph>
                   {item.description}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  Категория: {item.category}
                 </Typography>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Typography variant="h6" color="primary">
@@ -154,6 +251,19 @@ const Menu: React.FC = () => {
           </Grid>
         ))}
       </Grid>
+
+      {totalPages > 1 && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <Pagination 
+            count={totalPages} 
+            page={currentPage} 
+            onChange={handlePageChange}
+            color="primary"
+            size="large"
+          />
+        </Box>
+      )}
+
       <Snackbar 
         open={notification.open} 
         autoHideDuration={3000} 

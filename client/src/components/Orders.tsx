@@ -23,7 +23,7 @@ interface Order {
   id: string;
   status: string;
   deliveryAddress: string;
-  createdAt: string;
+  orderTime: string;
   items: OrderItem[];
   totalAmount: number;
 }
@@ -46,7 +46,7 @@ const Orders: React.FC = () => {
     }
 
     try {
-      const response = await fetch('/api/orders', {
+      const response = await fetch('/api/orders/my-orders', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -62,6 +62,21 @@ const Orders: React.FC = () => {
       setError(err instanceof Error ? err.message : 'Ошибка при загрузке заказов');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleString('ru-RU', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      return 'Дата не указана';
     }
   };
 
@@ -116,7 +131,7 @@ const Orders: React.FC = () => {
                       </Typography>
                       <br />
                       <Typography component="span" variant="body2" color="text.primary">
-                        Дата заказа: {new Date(order.createdAt).toLocaleString()}
+                        Дата заказа: {formatDate(order.orderTime)}
                       </Typography>
                     </>
                   }
@@ -133,7 +148,7 @@ const Orders: React.FC = () => {
                   </ListItem>
                 ))}
               </List>
-              <Box sx={{ p: 2, bgcolor: 'background.default' }}>
+              <Box sx={{ p: 2 }}>
                 <Typography variant="subtitle1" align="right">
                   Итого: {order.totalAmount} ₽
                 </Typography>
