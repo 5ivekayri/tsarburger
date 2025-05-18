@@ -19,8 +19,6 @@ import AdminPanel from './components/AdminPanel';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import MenuIcon from '@mui/icons-material/Menu';
 import Menu from './components/Menu';
-import Products from './components/Products';
-import Users from './components/Users';
 
 interface Product {
   id: string;
@@ -75,15 +73,6 @@ function App() {
   const [roles, setRoles] = useState<string[]>([])
   const isMobile = useMediaQuery('(max-width:600px)');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setIsAuthenticated(false);
-    setUsername('');
-    setRoles([]);
-    setCartItemsCount(0);
-  };
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -173,12 +162,10 @@ function App() {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
-      });
-
+      })
       if (!response.ok) {
         throw new Error(`Ошибка HTTP: ${response.status}`)
       }
-
       const data = await response.json()
       setCartItemsCount(data.length)
     } catch (e) {
@@ -186,44 +173,26 @@ function App() {
     }
   }
 
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    setIsAuthenticated(false)
+    setUsername('')
+    setRoles([])
+    setCartItemsCount(0)
+  }
+
   return (
     <Router>
-      <AppBar position="static">
-        <Toolbar>
-          <IconButton
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            onClick={() => setMobileNavOpen(true)}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            {activeTab === 'products' ? 'Товары' : activeTab === 'users' ? 'Пользователи' : 'Заказы'}
-          </Typography>
-          <div>
-            <IconButton color="inherit" aria-label="cart">
-              <Badge badgeContent={cartItemsCount} color="secondary">
-                <CartIcon />
-              </Badge>
-            </IconButton>
-          </div>
-        </Toolbar>
-      </AppBar>
       <Routes>
         <Route path="/" element={<Auth />} />
-        <Route path="/products" element={<Products products={products} />} />
-        <Route path="/users" element={<Users users={users} />} />
-        <Route path="/orders" element={<Orders orders={orders} />} />
+        <Route path="/products" element={<Menu />} />
         <Route path="/cart" element={<Cart />} />
+        <Route path="/orders" element={<Orders />} />
         <Route path="/admin" element={<AdminPanel />} />
       </Routes>
-      <Menu
-        isOpen={mobileNavOpen}
-        onClose={() => setMobileNavOpen(false)}
-      />
     </Router>
-  );
+  )
 }
 
-export default App;
+export default App

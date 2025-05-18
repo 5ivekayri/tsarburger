@@ -17,17 +17,9 @@ import {
   Pagination
 } from '@mui/material';
 import { Search, Add, Remove, ShoppingCart } from '@mui/icons-material';
+import { MenuItem } from '../types';
 
-interface MenuItem {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  imageBase64?: string;
-}
-
-const Menu: React.FC = () => {
+const MenuPage: React.FC = () => {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -57,27 +49,11 @@ const Menu: React.FC = () => {
     setSelectedCategory(newValue);
   };
 
-  const handleAddToCart = async (itemId: string) => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/cart/items', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ menuItemId: itemId, quantity: 1 })
-      });
-      if (!response.ok) {
-        throw new Error('Ошибка при добавлении в корзину');
-      }
-      setCart(prev => ({
-        ...prev,
-        [itemId]: (prev[itemId] || 0) + 1
-      }));
-    } catch (error) {
-      setError('Не удалось добавить в корзину');
-    }
+  const handleAddToCart = (itemId: string) => {
+    setCart(prev => ({
+      ...prev,
+      [itemId]: (prev[itemId] || 0) + 1
+    }));
   };
 
   const handleRemoveFromCart = (itemId: string) => {
@@ -324,4 +300,4 @@ const Menu: React.FC = () => {
   );
 };
 
-export default Menu;
+export default MenuPage; 

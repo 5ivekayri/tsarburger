@@ -60,7 +60,11 @@ public class CartController {
     public ResponseEntity<CartDTO> updateItemQuantity(
             @RequestAttribute("userId") String userId,
             @PathVariable String menuItemId,
-            @RequestParam int quantity) {
+            @RequestBody Map<String, Integer> body) {
+        Integer quantity = body.get("quantity");
+        if (quantity == null) {
+            return ResponseEntity.badRequest().build();
+        }
         return ResponseEntity.ok(cartMapper.toDTO(cartService.updateItemQuantity(userId, menuItemId, quantity)));
     }
 

@@ -61,9 +61,9 @@ const Cart: React.FC = () => {
     }
   };
 
-  const updateQuantity = async (itemId: string, newQuantity: number) => {
+  const updateQuantity = async (menuItemId: string, newQuantity: number) => {
     try {
-      const response = await fetch(`/api/cart/items/${itemId}`, {
+      const response = await fetch(`/api/cart/items/${menuItemId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -76,19 +76,15 @@ const Cart: React.FC = () => {
         throw new Error('Ошибка при обновлении количества');
       }
 
-      setCartItems(prev => 
-        prev.map(item => 
-          item.id === itemId ? { ...item, quantity: newQuantity } : item
-        )
-      );
+      await fetchCart();
     } catch (error) {
       setError('Не удалось обновить количество');
     }
   };
 
-  const removeItem = async (itemId: string) => {
+  const removeItem = async (menuItemId: string) => {
     try {
-      const response = await fetch(`/api/cart/items/${itemId}`, {
+      const response = await fetch(`/api/cart/items/${menuItemId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -99,7 +95,7 @@ const Cart: React.FC = () => {
         throw new Error('Ошибка при удалении товара');
       }
 
-      setCartItems(prev => prev.filter(item => item.id !== itemId));
+      await fetchCart();
     } catch (error) {
       setError('Не удалось удалить товар');
     }
@@ -264,7 +260,7 @@ const Cart: React.FC = () => {
                   }}>
                     <IconButton
                       size="small"
-                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                      onClick={() => updateQuantity(item.menuItemId, item.quantity - 1)}
                       disabled={item.quantity <= 1}
                       sx={{
                         color: 'var(--primary-color)',
@@ -279,7 +275,7 @@ const Cart: React.FC = () => {
                     <Typography sx={{ mx: 1 }}>{item.quantity}</Typography>
                     <IconButton
                       size="small"
-                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                      onClick={() => updateQuantity(item.menuItemId, item.quantity + 1)}
                       sx={{
                         color: 'var(--primary-color)',
                         backgroundColor: 'rgba(127,223,212,0.1)',
@@ -291,7 +287,7 @@ const Cart: React.FC = () => {
                       <Add />
                     </IconButton>
                     <IconButton
-                      onClick={() => removeItem(item.id)}
+                      onClick={() => removeItem(item.menuItemId)}
                       sx={{
                         color: 'var(--error-color)',
                         '&:hover': {
