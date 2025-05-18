@@ -672,23 +672,26 @@ const AdminPanel: React.FC = () => {
                 }}
               />
             </Grid>
-            <Grid item xs={12} sm={2}>
+            <Grid item xs={12} sm={2} sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1, alignItems: 'center' }}>
               <Button
                 variant="outlined"
                 component="label"
-                startIcon={<PhotoCamera sx={{ color: '#7fdfd4' }} />}
+                startIcon={<PhotoCamera sx={{ color: 'var(--primary-color)' }} />}
                 sx={{ 
-                  width: '100%',
-                  borderColor: '#e0e0e0',
-                  borderRadius: 3,
-                  color: '#2d3436',
-                  '&:hover': {
-                    borderColor: '#7fdfd4',
-                    backgroundColor: 'rgba(127,223,212,0.05)'
-                  }
+                  width: { xs: '100%', sm: '150px' },
+                  minWidth: { sm: '150px' },
+                  borderColor: 'var(--primary-color)',
+                  borderRadius: 2,
+                  color: 'var(--secondary-color)',
+                  mb: { xs: 1, sm: 0 },
+                  fontWeight: 600,
+                  fontSize: { xs: '0.95rem', sm: '1rem' },
+                  boxShadow: 1,
+                  whiteSpace: 'normal',
+                  textAlign: 'center'
                 }}
               >
-                Загрузить картинку
+                ЗАГРУЗИТЬ КАРТИНКУ
                 <input 
                   type="file" 
                   accept="image/*" 
@@ -696,22 +699,23 @@ const AdminPanel: React.FC = () => {
                   onChange={handleImageChange} 
                 />
               </Button>
-            </Grid>
-            <Grid item xs={12} sm={2}>
               <Button
                 variant="contained"
                 onClick={handleAdd}
                 sx={{
-                  width: '100%',
-                  backgroundColor: '#7fdfd4',
-                  color: '#fff',
-                  borderRadius: 3,
-                  '&:hover': {
-                    backgroundColor: '#5dbeae'
-                  }
+                  width: { xs: '100%', sm: '150px' },
+                  minWidth: { sm: '150px' },
+                  backgroundColor: 'var(--primary-color)',
+                  color: 'var(--secondary-color)',
+                  borderRadius: 2,
+                  fontWeight: 700,
+                  fontSize: { xs: '0.95rem', sm: '1rem' },
+                  boxShadow: 1,
+                  whiteSpace: 'normal',
+                  textAlign: 'center'
                 }}
               >
-                Добавить
+                ДОБАВИТЬ
               </Button>
             </Grid>
           </Grid>
@@ -796,16 +800,20 @@ const AdminPanel: React.FC = () => {
           Управление пользователями
         </Typography>
         <TableContainer component={Paper} sx={{ 
-          borderRadius: 3,
+          borderRadius: { xs: 2, sm: 3 },
           border: '1px solid #f0f0f0',
           '& .MuiTableCell-head': {
-            backgroundColor: '#7fdfd4',
-            color: '#fff',
-            fontWeight: 600
+            backgroundColor: 'var(--secondary-color)',
+            color: 'var(--primary-color)',
+            fontWeight: 700,
+            fontSize: { xs: '0.9rem', sm: '1.1rem' }
           },
           '& .MuiTableRow-root:hover': {
-            backgroundColor: 'rgba(127,223,212,0.05)'
-          }
+            backgroundColor: 'rgba(255,198,39,0.05)'
+          },
+          overflowX: 'auto',
+          maxWidth: '100vw',
+          minWidth: 0
         }}>
           <Table>
             <TableHead>
@@ -821,7 +829,7 @@ const AdminPanel: React.FC = () => {
             <TableBody>
               {users.map((user) => (
                 <TableRow key={user.id}>
-                  <TableCell>{user.id}</TableCell>
+                  <TableCell sx={{ maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={user.id}>{user.id}</TableCell>
                   <TableCell>{user.username}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{user.roles.join(', ')}</TableCell>
@@ -856,49 +864,47 @@ const AdminPanel: React.FC = () => {
           Управление заказами
         </Typography>
         <TableContainer component={Paper} sx={{ 
-          borderRadius: 3,
+          borderRadius: { xs: 2, sm: 3 },
           border: '1px solid #f0f0f0',
           '& .MuiTableCell-head': {
-            backgroundColor: '#7fdfd4',
-            color: '#fff',
-            fontWeight: 600
+            backgroundColor: 'var(--secondary-color)',
+            color: 'var(--primary-color)',
+            fontWeight: 700,
+            fontSize: { xs: '0.9rem', sm: '1.1rem' }
           },
           '& .MuiTableRow-root:hover': {
-            backgroundColor: 'rgba(127,223,212,0.05)'
-          }
+            backgroundColor: 'rgba(255,198,39,0.05)'
+          },
+          overflowX: 'auto',
+          maxWidth: '100vw',
+          minWidth: 0
         }}>
-          <Table>
+          <Table sx={{ minWidth: 400 }} size="small">
             <TableHead>
               <TableRow>
-                <TableCell>ID заказа</TableCell>
-                <TableCell>ID пользователя</TableCell>
-                <TableCell>Статус</TableCell>
-                <TableCell>Адрес доставки</TableCell>
-                <TableCell>Дата заказа</TableCell>
-                <TableCell>Сумма</TableCell>
-                <TableCell>Действия</TableCell>
+                <TableCell sx={{ maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: { xs: '0.8rem', sm: '1rem' } }}>ID заказа</TableCell>
+                <TableCell sx={{ maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: { xs: '0.8rem', sm: '1rem' } }}>ID пользователя</TableCell>
+                <TableCell sx={{ fontSize: { xs: '0.8rem', sm: '1rem' } }}>Статус</TableCell>
+                <TableCell sx={{ fontSize: { xs: '0.8rem', sm: '1rem' } }}>Адрес доставки</TableCell>
+                <TableCell sx={{ fontSize: { xs: '0.8rem', sm: '1rem' } }}>Дата заказа</TableCell>
+                <TableCell sx={{ fontSize: { xs: '0.8rem', sm: '1rem' } }}>Сумма</TableCell>
+                <TableCell sx={{ fontSize: { xs: '0.8rem', sm: '1rem' } }}>Действия</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {orders.map((order) => (
                 <TableRow key={order.id}>
-                  <TableCell>{order.id}</TableCell>
-                  <TableCell>{order.userId}</TableCell>
+                  <TableCell sx={{ maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={order.id}>{order.id}</TableCell>
+                  <TableCell sx={{ maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={order.userId}>{order.userId}</TableCell>
                   <TableCell>{order.status}</TableCell>
                   <TableCell>{order.deliveryAddress}</TableCell>
                   <TableCell>{new Date(order.orderTime).toLocaleString()}</TableCell>
                   <TableCell>{order.totalAmount} ₽</TableCell>
                   <TableCell>
-                    <IconButton 
-                      onClick={() => handleOrderEdit(order)}
-                      sx={{ color: '#7fdfd4', '&:hover': { color: '#5dbeae' } }}
-                    >
+                    <IconButton onClick={() => handleOrderEdit(order)} sx={{ color: 'var(--primary-color)', '&:hover': { color: 'var(--primary-hover)' } }}>
                       <Edit />
                     </IconButton>
-                    <IconButton 
-                      onClick={() => handleOrderDelete(order.id)}
-                      sx={{ color: '#ff7675', '&:hover': { color: '#d63031' } }}
-                    >
+                    <IconButton onClick={() => handleOrderDelete(order.id)} sx={{ color: '#ff7675', '&:hover': { color: '#d63031' } }}>
                       <Delete />
                     </IconButton>
                   </TableCell>

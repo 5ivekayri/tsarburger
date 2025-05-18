@@ -16,6 +16,11 @@ import Cart from './components/Cart';
 import Orders from './components/Orders';
 import Auth from './components/Auth';
 import AdminPanel from './components/AdminPanel';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import MenuIcon from '@mui/icons-material/Menu';
+import Menu from './components/Menu';
+import Products from './components/Products';
+import Users from './components/Users';
 
 interface Product {
   id: string;
@@ -68,6 +73,17 @@ function App() {
   const [cartItemsCount, setCartItemsCount] = useState(0)
   const [username, setUsername] = useState("")
   const [roles, setRoles] = useState<string[]>([])
+  const isMobile = useMediaQuery('(max-width:600px)');
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setIsAuthenticated(false);
+    setUsername('');
+    setRoles([]);
+    setCartItemsCount(0);
+  };
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -158,146 +174,56 @@ function App() {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
-      if (response.ok) {
-        const data = await response.json();
-        setCartItemsCount(data.items?.length || 0);
+
+      if (!response.ok) {
+        throw new Error(`Ошибка HTTP: ${response.status}`)
       }
-    } catch (error) {
-      console.error('Error fetching cart items count:', error);
+
+      const data = await response.json()
+      setCartItemsCount(data.length)
+    } catch (e) {
+      console.error('Ошибка при получении количества товаров в корзине:', e)
     }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setIsAuthenticated(false);
-    setCartItemsCount(0);
-    setUsername("");
-    setRoles([]);
-  };
-
-  const retryFetch = () => {
-    fetchData()
   }
 
   return (
     <Router>
-      <Box sx={{ flexGrow: 1 }}>
-        <AppBar position="static" sx={{ 
-          backgroundColor: 'var(--primary-color)',
-          color: 'var(--text-color)',
-          boxShadow: '0 2px 8px var(--shadow-color)',
-          borderBottomLeftRadius: '18px',
-          borderBottomRightRadius: '18px',
-          animation: 'fadeInDown 0.7s cubic-bezier(.39,.575,.56,1) both'
-        }}>
-          <Toolbar>
-            <Typography 
-              variant="h6" 
-              component={Link} 
-              to="/" 
-              sx={{ 
-                flexGrow: 1, 
-                textDecoration: 'none', 
-                color: 'var(--primary-color)',
-                fontWeight: 800,
-                fontSize: '2rem',
-                fontFamily: 'Montserrat, Arial, sans-serif',
-                letterSpacing: '0.03em',
-                textAlign: 'left',
-                display: 'flex',
-                alignItems: 'center'
-              }}
-            >
-              🍔 BurgerHouse
-            </Typography>
-            {isAuthenticated ? (
-              <>
-                <Button 
-                  component={Link} 
-                  to="/orders"
-                  sx={{ 
-                    color: 'var(--text-color)',
-                    mx: 1,
-                    '&:hover': {
-                      backgroundColor: 'rgba(127,223,212,0.1)'
-                    }
-                  }}
-                >
-                  Мои заказы
-                </Button>
-                <IconButton
-                  component={Link}
-                  to="/cart"
-                  sx={{ 
-                    ml: 2,
-                    color: 'var(--text-color)',
-                    '&:hover': {
-                      backgroundColor: 'rgba(127,223,212,0.1)'
-                    }
-                  }}
-                >
-                  <Badge badgeContent={cartItemsCount} color="error">
-                    <CartIcon />
-                  </Badge>
-                </IconButton>
-                {roles.includes('ROLE_ADMIN') && (
-                  <Button 
-                    component={Link} 
-                    to="/admin"
-                    sx={{ 
-                      color: 'var(--text-color)',
-                      mx: 1,
-                      '&:hover': {
-                        backgroundColor: 'rgba(127,223,212,0.1)'
-                      }
-                    }}
-                  >
-                    Админ панель
-                  </Button>
-                )}
-                <Button 
-                  onClick={handleLogout}
-                  sx={{ 
-                    color: 'var(--text-color)',
-                    mx: 1,
-                    '&:hover': {
-                      backgroundColor: 'rgba(127,223,212,0.1)'
-                    }
-                  }}
-                >
-                  Выйти
-                </Button>
-              </>
-            ) : (
-              <Button 
-                component={Link} 
-                to="/login"
-                sx={{ 
-                  color: 'var(--text-color)',
-                  '&:hover': {
-                    backgroundColor: 'rgba(127,223,212,0.1)'
-                  }
-                }}
-              >
-                Войти
-              </Button>
-            )}
-          </Toolbar>
-        </AppBar>
-
-        <Container>
-          <Routes>
-            <Route path="/" element={<Menu />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/orders" element={<Orders />} />
-            <Route path="/login" element={<Auth />} />
-            <Route path="/admin" element={<AdminPanel />} />
-          </Routes>
-        </Container>
-      </Box>
+      <AppBar position="static">
+        <Toolbar>
+          <IconButton
+            edge="start"
+            color="inherit"
+            aria-label="menu"
+            onClick={() => setMobileNavOpen(true)}
+          >
+            <MenuIcon />
+          </IconButton>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            {activeTab === 'products' ? 'Товары' : activeTab === 'users' ? 'Пользователи' : 'Заказы'}
+          </Typography>
+          <div>
+            <IconButton color="inherit" aria-label="cart">
+              <Badge badgeContent={cartItemsCount} color="secondary">
+                <CartIcon />
+              </Badge>
+            </IconButton>
+          </div>
+        </Toolbar>
+      </AppBar>
+      <Routes>
+        <Route path="/" element={<Auth />} />
+        <Route path="/products" element={<Products products={products} />} />
+        <Route path="/users" element={<Users users={users} />} />
+        <Route path="/orders" element={<Orders orders={orders} />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/admin" element={<AdminPanel />} />
+      </Routes>
+      <Menu
+        isOpen={mobileNavOpen}
+        onClose={() => setMobileNavOpen(false)}
+      />
     </Router>
-  )
+  );
 }
 
-export default App
+export default App;

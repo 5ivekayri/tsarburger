@@ -97,20 +97,28 @@ const Orders: React.FC = () => {
     <Container maxWidth="lg" sx={{ 
       py: 4,
       minHeight: '100vh',
-      backgroundColor: 'var(--background-color)'
+      backgroundColor: 'var(--background-color)',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      px: { xs: 0.5, sm: 2, md: 4 }
     }}>
       <Paper elevation={0} sx={{ 
-        p: 4,
-        borderRadius: 4,
+        p: { xs: 2, sm: 4 },
+        borderRadius: { xs: 2, sm: 4 },
         backgroundColor: '#FFFFFF',
-        boxShadow: '0 4px 20px var(--shadow-color)'
+        boxShadow: '0 4px 20px var(--shadow-color)',
+        width: { xs: '100%', sm: '90%', md: '70%', lg: '60%' },
+        maxWidth: 600,
+        mb: 2
       }}>
         <Typography variant="h4" sx={{ 
           mb: 4,
-          color: 'var(--text-color)',
+          color: 'var(--secondary-color)',
           fontWeight: 700,
           textAlign: 'center',
-          fontFamily: '"Helvetica Neue", Arial, sans-serif'
+          fontFamily: 'Montserrat, Arial, sans-serif',
+          fontSize: { xs: '1.5rem', sm: '2.2rem' }
         }}>
           📦 Мои заказы
         </Typography>
@@ -128,23 +136,17 @@ const Orders: React.FC = () => {
         )}
 
         {orders.length === 0 ? (
-          <Box sx={{ 
-            textAlign: 'center',
-            py: 4
-          }}>
-            <Typography variant="h6" sx={{ 
-              color: 'var(--text-color)',
-              mb: 2
-            }}>
+          <Box sx={{ textAlign: 'center', py: 4 }}>
+            <Typography variant="h6" sx={{ color: 'var(--text-color)', mb: 2, fontSize: { xs: '1rem', sm: '1.2rem' } }}>
               У вас пока нет заказов
             </Typography>
           </Box>
         ) : (
-          <>
+          <Box sx={{ width: '100%' }}>
             {paginatedOrders.map((order) => (
               <Card key={order.id} sx={{ 
                 mb: 3,
-                borderRadius: 3,
+                borderRadius: { xs: 2, sm: 3 },
                 backgroundColor: 'var(--card-bg)',
                 boxShadow: '0 4px 24px var(--shadow-color)',
                 transition: 'transform 0.25s cubic-bezier(.39,.575,.56,1), box-shadow 0.25s',
@@ -152,109 +154,65 @@ const Orders: React.FC = () => {
                 '&:hover': {
                   transform: 'scale(1.03)',
                   boxShadow: '0 8px 32px var(--shadow-color)'
-                }
+                },
+                width: '100%',
+                overflowX: 'auto'
               }}>
-                <CardContent>
-                  <Box sx={{ 
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    mb: 2
-                  }}>
-                    <Typography variant="h6" sx={{ 
-                      color: 'var(--text-color)',
-                      fontWeight: 600
-                    }}>
-                      Заказ #{order.id}
+                <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                  <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, mb: 2, gap: 1 }}>
+                    <Typography variant="h6" sx={{ color: 'var(--secondary-color)', fontWeight: 600, fontSize: { xs: '1rem', sm: '1.2rem' } }}>
+                      Заказ
                     </Typography>
-                    <Chip
-                      label={statusLabels[order.status]}
-                      sx={{
-                        backgroundColor: statusColors[order.status],
-                        color: 'var(--text-color)',
-                        fontWeight: 500,
-                        borderRadius: 2
-                      }}
-                    />
+                    <Typography sx={{ fontWeight: 700, fontSize: { xs: '0.85rem', sm: '1rem' }, wordBreak: 'break-all', maxWidth: { xs: 220, sm: 350 } }}>
+                      #{order.id}
+                    </Typography>
                   </Box>
-
-                  <Typography variant="body2" sx={{ 
-                    color: '#636e72',
-                    mb: 2
-                  }}>
+                  <Typography variant="body2" sx={{ color: '#636e72', mb: 1, fontSize: { xs: '0.85rem', sm: '1rem' } }}>
                     {new Date(order.orderTime).toLocaleString()}
                   </Typography>
-
-                  <Typography variant="body2" sx={{ 
-                    color: 'var(--text-color)',
-                    mb: 2
-                  }}>
+                  <Typography variant="body2" sx={{ color: 'var(--text-color)', mb: 1, fontSize: { xs: '0.95rem', sm: '1rem' } }}>
                     Адрес доставки: {order.deliveryAddress}
                   </Typography>
-
                   <Divider sx={{ my: 2 }} />
-
                   {order.items.map((item, index) => (
-                    <Box key={index} sx={{ 
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      mb: 1
-                    }}>
-                      <Typography variant="body2" sx={{ 
-                        color: 'var(--text-color)'
-                      }}>
-                        {item.name} x {item.quantity}
+                    <Box key={index} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                      <Typography variant="body2" sx={{ color: 'var(--text-color)', fontSize: { xs: '0.95rem', sm: '1rem' } }}>
+                        x {item.quantity}
                       </Typography>
-                      <Typography variant="body2" sx={{ 
-                        color: 'var(--primary-color)',
-                        fontWeight: 600
-                      }}>
+                      <Typography variant="body2" sx={{ color: 'var(--primary-color)', fontWeight: 600, fontSize: { xs: '0.95rem', sm: '1rem' } }}>
                         {item.price * item.quantity} ₽
                       </Typography>
                     </Box>
                   ))}
-
                   <Divider sx={{ my: 2 }} />
-
-                  <Box sx={{ 
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                  }}>
-                    <Typography variant="h6" sx={{ 
-                      color: 'var(--text-color)',
-                      fontWeight: 600
-                    }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="h6" sx={{ color: 'var(--secondary-color)', fontWeight: 700, fontSize: { xs: '1.1rem', sm: '1.3rem' } }}>
                       Итого:
                     </Typography>
-                    <Typography variant="h6" sx={{ 
-                      color: 'var(--primary-color)',
-                      fontWeight: 700
-                    }}>
+                    <Typography variant="h6" sx={{ color: 'var(--primary-color)', fontWeight: 700, fontSize: { xs: '1.1rem', sm: '1.3rem' } }}>
                       {order.totalAmount} ₽
                     </Typography>
                   </Box>
                 </CardContent>
               </Card>
             ))}
+          </Box>
+        )}
 
-            {orders.length > itemsPerPage && (
-              <Box sx={{ 
-                display: 'flex',
-                justifyContent: 'center',
-                mt: 4
-              }}>
-                <Pagination
-                  count={Math.ceil(orders.length / itemsPerPage)}
-                  page={page}
-                  onChange={handlePageChange}
-                  color="primary"
-                  size="large"
-                />
-              </Box>
-            )}
-          </>
+        {orders.length > itemsPerPage && (
+          <Box sx={{ 
+            display: 'flex',
+            justifyContent: 'center',
+            mt: 4
+          }}>
+            <Pagination
+              count={Math.ceil(orders.length / itemsPerPage)}
+              page={page}
+              onChange={handlePageChange}
+              color="primary"
+              size="large"
+            />
+          </Box>
         )}
       </Paper>
     </Container>
