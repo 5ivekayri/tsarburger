@@ -8,6 +8,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -18,6 +22,17 @@ public class UserController {
     public UserController(UserService userService, UserMapper userMapper) {
         this.userService = userService;
         this.userMapper = userMapper;
+    }
+
+    // Получить всех пользователей (только для админов)
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<UserDTO>> getAllUsers() {
+        List<User> users = userService.findAll();
+        List<UserDTO> userDTOs = users.stream()
+                .map(userMapper::toDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(userDTOs);
     }
 
     // Регистрация нового пользователя

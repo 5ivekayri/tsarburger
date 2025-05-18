@@ -86,4 +86,12 @@ public class OrderService {
         order.setStatus(Order.OrderStatus.CANCELLED);
         return orderRepository.save(order);
     }
+
+    // Удалить заказ
+    public void deleteOrder(String orderId) {
+        if (!orderRepository.existsById(orderId)) {
+            throw new RuntimeException("Заказ не найден");
+        }
+        orderRepository.deleteById(orderId);
+    }
 } 

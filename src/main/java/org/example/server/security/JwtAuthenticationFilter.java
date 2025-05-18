@@ -67,9 +67,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
                     
                     // Проверяем, что роли в токене совпадают с ролями пользователя
-                    if (userDetails != null && roles.containsAll(userDetails.getAuthorities().stream()
+                    if (userDetails != null && userDetails.getAuthorities().stream()
                             .map(auth -> auth.getAuthority())
-                            .collect(Collectors.toList()))) {
+                            .anyMatch(roles::contains)) {
                         
                         UsernamePasswordAuthenticationToken authentication = 
                             new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
@@ -81,7 +81,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         request.setAttribute("userId", userId);
                         logger.debug("Authentication set for user: {} with roles: {}", username, roles);
                     } else {
-                        logger.warn("Token roles do not match user roles for user: {}", username);
+                        logger.warn("Token roles do not match user roles for user: {}. Token roles: {}, User roles: {}", username, roles, userDetails != null ? userDetails.getAuthorities() : "null");
                         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                         response.getWriter().write("{\"error\": \"Unauthorized\", \"message\": \"Invalid token roles\"}");
                         return;

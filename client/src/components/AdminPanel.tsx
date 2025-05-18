@@ -33,6 +33,13 @@ interface User {
   enabled: boolean;
 }
 
+interface OrderItem {
+  menuItemId: string;
+  name: string;
+  quantity: number;
+  price: number;
+}
+
 interface Order {
   id: string;
   userId: string;
@@ -92,7 +99,7 @@ const AdminPanel: React.FC = () => {
   const token = localStorage.getItem('token');
 
   const categories = ["Бургеры", "Напитки", "Сайды"];
-  const orderStatuses = ["PENDING", "PREPARING", "READY", "DELIVERED"];
+  const orderStatuses = ["PENDING", "CONFIRMED", "PREPARING", "READY", "ON_THE_WAY", "DELIVERED", "CANCELLED"];
 
   const fetchMenu = async () => {
     try {
@@ -122,7 +129,6 @@ const AdminPanel: React.FC = () => {
   useEffect(() => {
     const init = async () => {
       if (!token) {
-        navigate('/login');
         return;
       }
 
@@ -143,6 +149,7 @@ const AdminPanel: React.FC = () => {
 
         const data = await response.json();
         setMenuItems(data);
+        await fetchUsers();
       } catch (error) {
         console.error('Error initializing admin panel:', error);
         setError('Ошибка при загрузке меню');
@@ -150,10 +157,15 @@ const AdminPanel: React.FC = () => {
     };
 
     init();
-  }, [token, navigate]);
+  }, [token]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
+    if (newValue === 1) {
+      fetchUsers();
+    } else if (newValue === 2) {
+      fetchOrders();
+    }
   };
 
   const fetchUsers = async () => {
@@ -166,12 +178,17 @@ const AdminPanel: React.FC = () => {
       });
       
       if (!response.ok) {
+        if (response.status === 401) {
+          setError('Сессия истекла. Пожалуйста, войдите снова.');
+          return;
+        }
         throw new Error('Ошибка при загрузке пользователей');
       }
       
       const data = await response.json();
       setUsers(data);
     } catch (error) {
+      console.error('Error fetching users:', error);
       setError('Ошибка при загрузке пользователей');
     }
   };
@@ -186,12 +203,17 @@ const AdminPanel: React.FC = () => {
       });
       
       if (!response.ok) {
+        if (response.status === 401) {
+          setError('Сессия истекла. Пожалуйста, войдите снова.');
+          return;
+        }
         throw new Error('Ошибка при загрузке заказов');
       }
       
       const data = await response.json();
       setOrders(data);
     } catch (error) {
+      console.error('Error fetching orders:', error);
       setError('Ошибка при загрузке заказов');
     }
   };
@@ -234,6 +256,7 @@ const AdminPanel: React.FC = () => {
     if (!selectedOrder) return;
 
     try {
+      console.log('Sending status update:', selectedOrder.status);
       const response = await fetch(`/api/orders/${selectedOrder.id}/status`, {
         method: 'PUT',
         headers: {
@@ -244,13 +267,23 @@ const AdminPanel: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Ошибка при обновлении заказа');
+        const errorData = await response.json().catch(() => null);
+        console.error('Server response:', errorData);
+        if (response.status === 401) {
+          setError('Сессия истекла. Пожалуйста, войдите снова.');
+          return;
+        }
+        throw new Error(errorData?.message || 'Ошибка при обновлении заказа');
       }
 
+      const updatedOrder = await response.json();
+      console.log('Order updated:', updatedOrder);
+      
       setOrderDialogOpen(false);
-      fetchOrders();
+      await fetchOrders();
     } catch (error) {
-      setError('Ошибка при обновлении заказа');
+      console.error('Error updating order:', error);
+      setError(error instanceof Error ? error.message : 'Ошибка при обновлении заказа');
     }
   };
 
@@ -273,6 +306,33 @@ const AdminPanel: React.FC = () => {
       fetchUsers();
     } catch (error) {
       setError('Ошибка при удалении пользователя');
+    }
+  };
+
+  const handleOrderDelete = async (orderId: string) => {
+    if (!window.confirm('Вы уверены, что хотите удалить этот заказ?')) return;
+
+    try {
+      const response = await fetch(`/api/orders/${orderId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          setError('Нет прав для удаления заказа');
+          return;
+        }
+        throw new Error('Ошибка при удалении заказа');
+      }
+
+      await fetchOrders();
+    } catch (error) {
+      console.error('Error deleting order:', error);
+      setError('Ошибка при удалении заказа');
     }
   };
 
@@ -688,6 +748,9 @@ const AdminPanel: React.FC = () => {
                   <TableCell>
                     <IconButton onClick={() => handleOrderEdit(order)} color="primary">
                       <Edit />
+                    </IconButton>
+                    <IconButton onClick={() => handleOrderDelete(order.id)} color="error">
+                      <Delete />
                     </IconButton>
                   </TableCell>
                 </TableRow>

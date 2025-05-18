@@ -10,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -62,7 +63,8 @@ public class OrderController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<OrderDTO> updateOrderStatus(
             @PathVariable String id,
-            @RequestParam Order.OrderStatus status) {
+            @RequestBody Map<String, String> request) {
+        Order.OrderStatus status = Order.OrderStatus.valueOf(request.get("status"));
         return ResponseEntity.ok(orderMapper.toDTO(orderService.updateOrderStatus(id, status)));
     }
 
@@ -71,5 +73,13 @@ public class OrderController {
     @PreAuthorize("hasRole('ADMIN') or @orderService.getOrder(#id).userId == authentication.principal.id")
     public ResponseEntity<OrderDTO> cancelOrder(@PathVariable String id) {
         return ResponseEntity.ok(orderMapper.toDTO(orderService.cancelOrder(id)));
+    }
+
+    // Удалить заказ (для администратора)
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteOrder(@PathVariable String id) {
+        orderService.deleteOrder(id);
+        return ResponseEntity.ok().build();
     }
 } 
