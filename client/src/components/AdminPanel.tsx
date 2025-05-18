@@ -98,7 +98,7 @@ const AdminPanel: React.FC = () => {
   const token = localStorage.getItem('token');
 
   const categories = ["Бургеры", "Напитки", "Сайды"];
-  const orderStatuses = ["PENDING", "CONFIRMED", "PREPARING", "READY", "ON_THE_WAY", "DELIVERED", "CANCELLED"];
+  const orderStatuses = ["PENDING", "CONFIRMED", "PREPARING", "READY_FOR_DELIVERY", "DELIVERING", "DELIVERED", "CANCELLED"];
 
   const fetchMenu = async () => {
     try {

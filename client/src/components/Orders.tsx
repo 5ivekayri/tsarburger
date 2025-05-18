@@ -33,8 +33,8 @@ const statusColors: { [key: string]: string } = {
   PENDING: '#fdcb6e',
   CONFIRMED: '#74b9ff',
   PREPARING: '#a29bfe',
-  READY: '#55efc4',
-  ON_THE_WAY: '#ffeaa7',
+  READY_FOR_DELIVERY: '#55efc4',
+  DELIVERING: '#ffeaa7',
   DELIVERED: '#00b894',
   CANCELLED: '#ff7675'
 };
@@ -43,8 +43,8 @@ const statusLabels: { [key: string]: string } = {
   PENDING: 'Ожидает подтверждения',
   CONFIRMED: 'Подтвержден',
   PREPARING: 'Готовится',
-  READY: 'Готов к доставке',
-  ON_THE_WAY: 'В пути',
+  READY_FOR_DELIVERY: 'Готов к доставке',
+  DELIVERING: 'В пути',
   DELIVERED: 'Доставлен',
   CANCELLED: 'Отменен'
 };
@@ -166,6 +166,18 @@ const Orders: React.FC = () => {
                     <Typography sx={{ fontWeight: 700, fontSize: { xs: '0.85rem', sm: '1rem' }, wordBreak: 'break-all', maxWidth: { xs: 220, sm: 350 } }}>
                       #{order.id}
                     </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1, gap: 1 }}>
+                    <Chip
+                      label={statusLabels[order.status] || order.status}
+                      sx={{
+                        backgroundColor: statusColors[order.status] || '#b2bec3',
+                        color: '#fff',
+                        fontWeight: 600,
+                        fontSize: { xs: '0.85rem', sm: '1rem' },
+                        px: 2
+                      }}
+                    />
                   </Box>
                   <Typography variant="body2" sx={{ color: '#636e72', mb: 1, fontSize: { xs: '0.85rem', sm: '1rem' } }}>
                     {new Date(order.orderTime).toLocaleString()}
