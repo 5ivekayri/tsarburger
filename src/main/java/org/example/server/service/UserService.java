@@ -64,6 +64,8 @@ public class UserService {
         
         existingUser.setEmail(user.getEmail());
         existingUser.setAddress(user.getAddress());
+        existingUser.setRoles(user.getRoles());
+        existingUser.setEnabled(user.isEnabled());
         if (user.getPassword() != null && !user.getPassword().isEmpty()) {
             existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
         }
