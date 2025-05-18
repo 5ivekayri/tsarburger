@@ -4,8 +4,7 @@ import {
   Select, MenuItem, FormControl, InputLabel, SelectChangeEvent, Tabs, Tab, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Paper, Dialog, DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
-import { Delete, Edit, Save, Add, Person, ShoppingCart } from '@mui/icons-material';
-import PhotoCamera from '@mui/icons-material/PhotoCamera';
+import { Delete, Edit, Save, Add, Person, ShoppingCart, PhotoCamera } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
 interface MenuItem {
@@ -491,84 +490,203 @@ const AdminPanel: React.FC = () => {
   }
 
   return (
-    <Container sx={{ mt: 4 }}>
-      <Typography variant="h4" gutterBottom>Админ-панель</Typography>
+    <Container maxWidth="xl" sx={{ 
+      mt: 4,
+      backgroundColor: '#fafafa',
+      minHeight: '100vh',
+      py: 4,
+      borderRadius: 3,
+      boxShadow: '0 4px 20px rgba(0,0,0,0.05)'
+    }}>
+      <Typography variant="h4" gutterBottom sx={{ 
+        color: '#2d3436',
+        fontWeight: 700,
+        mb: 4,
+        fontFamily: '"Helvetica Neue", Arial, sans-serif',
+        textAlign: 'center'
+      }}>
+        🍔 Админ-панель BurgerHouse
+      </Typography>
       
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert severity="error" sx={{ 
+          mb: 2,
+          borderRadius: 3,
+          boxShadow: '0 2px 8px rgba(255,0,0,0.1)'
+        }}>
           {error}
         </Alert>
       )}
 
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={tabValue} onChange={handleTabChange}>
-          <Tab icon={<ShoppingCart />} label="Меню" />
-          <Tab icon={<Person />} label="Пользователи" />
-          <Tab icon={<ShoppingCart />} label="Заказы" />
+      <Box sx={{ 
+        borderBottom: 1, 
+        borderColor: 'divider',
+        '& .MuiTabs-indicator': {
+          backgroundColor: '#7fdfd4',
+          height: 3
+        }
+      }}>
+        <Tabs value={tabValue} onChange={handleTabChange} variant="fullWidth" sx={{
+          backgroundColor: 'var(--primary-color)',
+          borderRadius: '12px',
+          mb: 3,
+          boxShadow: '0 2px 8px var(--shadow-color)',
+          '& .MuiTab-root': {
+            textTransform: 'none',
+            fontSize: 16,
+            color: 'var(--text-color)',
+            fontWeight: 600,
+            transition: 'color 0.2s',
+            '&.Mui-selected': {
+              color: 'var(--secondary-color)',
+              backgroundColor: 'rgba(208,245,234,0.15)',
+              borderRadius: '10px'
+            },
+            '&:hover': {
+              color: 'var(--primary-hover)',
+              backgroundColor: 'rgba(227,230,243,0.15)'
+            }
+          },
+          '& .MuiTabs-indicator': {
+            backgroundColor: 'var(--secondary-color)',
+            height: 3
+          }
+        }}>
+          <Tab icon={<ShoppingCart sx={{ color: tabValue === 0 ? '#7fdfd4' : '#2d3436' }} />} 
+               label="Меню" 
+               sx={{ 
+                 textTransform: 'none', 
+                 fontSize: 16,
+                 color: tabValue === 0 ? '#7fdfd4' : '#2d3436',
+                 '&:hover': { color: '#5dbeae' }
+               }} />
+          <Tab icon={<Person sx={{ color: tabValue === 1 ? '#7fdfd4' : '#2d3436' }} />} 
+               label="Пользователи" 
+               sx={{ 
+                 textTransform: 'none', 
+                 fontSize: 16,
+                 color: tabValue === 1 ? '#7fdfd4' : '#2d3436',
+                 '&:hover': { color: '#5dbeae' }
+               }} />
+          <Tab icon={<ShoppingCart sx={{ color: tabValue === 2 ? '#7fdfd4' : '#2d3436' }} />} 
+               label="Заказы" 
+               sx={{ 
+                 textTransform: 'none', 
+                 fontSize: 16,
+                 color: tabValue === 2 ? '#7fdfd4' : '#2d3436',
+                 '&:hover': { color: '#5dbeae' }
+               }} />
         </Tabs>
       </Box>
 
       <TabPanel value={tabValue} index={0}>
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="h6">Добавить новое блюдо</Typography>
+        <Box sx={{ 
+          mb: 3,
+          backgroundColor: '#fff',
+          p: 3,
+          borderRadius: 3,
+          boxShadow: '0 2px 12px rgba(0,0,0,0.05)'
+        }}>
+          <Typography variant="h6" sx={{ 
+            color: '#2d3436',
+            mb: 3,
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1
+          }}>
+            <Add sx={{ color: '#7fdfd4' }} /> Добавить новое блюдо
+          </Typography>
           <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} sm={2}>
-              <TextField 
-                label="Название" 
-                name="name" 
-                value={form.name} 
-                onChange={handleInputChange} 
-                fullWidth 
-                required
-                error={!!error && !form.name}
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="Название"
+                name="name"
+                value={form.name}
+                onChange={handleInputChange}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 3,
+                    '& fieldset': { borderColor: '#eee' },
+                    '&:hover fieldset': { borderColor: '#7fdfd4' },
+                    '&.Mui-focused fieldset': { borderColor: '#7fdfd4' }
+                  }
+                }}
               />
             </Grid>
-            <Grid item xs={12} sm={3}>
-              <TextField 
-                label="Описание" 
-                name="description" 
-                value={form.description} 
-                onChange={handleInputChange} 
-                fullWidth 
-                required
-                error={!!error && !form.description}
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="Цена"
+                name="price"
+                type="number"
+                value={form.price}
+                onChange={handleInputChange}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 3,
+                    '& fieldset': { borderColor: '#eee' },
+                    '&:hover fieldset': { borderColor: '#7fdfd4' },
+                    '&.Mui-focused fieldset': { borderColor: '#7fdfd4' }
+                  }
+                }}
               />
             </Grid>
-            <Grid item xs={12} sm={2}>
-              <FormControl fullWidth required error={!!error && !form.category}>
+            <Grid item xs={12} sm={4}>
+              <FormControl fullWidth>
                 <InputLabel>Категория</InputLabel>
                 <Select
-                  value={form.category}
-                  label="Категория"
                   name="category"
+                  value={form.category}
                   onChange={handleSelectChange}
+                  sx={{
+                    borderRadius: 3,
+                    '& .MuiOutlinedInput-notchedOutline': { borderColor: '#eee' },
+                    '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#7fdfd4' },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#7fdfd4' }
+                  }}
                 >
                   {categories.map((category) => (
-                    <MenuItem key={category} value={category}>
-                      {category}
-                    </MenuItem>
+                    <MenuItem key={category} value={category}>{category}</MenuItem>
                   ))}
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} sm={2}>
-              <TextField 
-                label="Цена" 
-                name="price" 
-                value={form.price} 
-                onChange={handleInputChange} 
-                type="number" 
-                fullWidth 
-                required
-                error={!!error && !form.price}
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Описание"
+                name="description"
+                multiline
+                rows={3}
+                value={form.description}
+                onChange={handleInputChange}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 3,
+                    '& fieldset': { borderColor: '#eee' },
+                    '&:hover fieldset': { borderColor: '#7fdfd4' },
+                    '&.Mui-focused fieldset': { borderColor: '#7fdfd4' }
+                  }
+                }}
               />
             </Grid>
             <Grid item xs={12} sm={2}>
               <Button
                 variant="outlined"
                 component="label"
-                startIcon={<PhotoCamera />}
-                sx={{ width: '100%' }}
+                startIcon={<PhotoCamera sx={{ color: '#7fdfd4' }} />}
+                sx={{ 
+                  width: '100%',
+                  borderColor: '#e0e0e0',
+                  borderRadius: 3,
+                  color: '#2d3436',
+                  '&:hover': {
+                    borderColor: '#7fdfd4',
+                    backgroundColor: 'rgba(127,223,212,0.05)'
+                  }
+                }}
               >
                 Загрузить картинку
                 <input 
@@ -578,17 +696,20 @@ const AdminPanel: React.FC = () => {
                   onChange={handleImageChange} 
                 />
               </Button>
-              {imageFile && <Typography variant="caption">{imageFile.name}</Typography>}
-              <Typography variant="caption" color="textSecondary">
-                Поддерживаются форматы: JPG, PNG, GIF (до 5MB)
-              </Typography>
             </Grid>
-            <Grid item xs={12} sm={1}>
-              <Button 
-                variant="contained" 
-                color="primary" 
-                onClick={handleAdd} 
-                startIcon={<Add />}
+            <Grid item xs={12} sm={2}>
+              <Button
+                variant="contained"
+                onClick={handleAdd}
+                sx={{
+                  width: '100%',
+                  backgroundColor: '#7fdfd4',
+                  color: '#fff',
+                  borderRadius: 3,
+                  '&:hover': {
+                    backgroundColor: '#5dbeae'
+                  }
+                }}
               >
                 Добавить
               </Button>
@@ -599,101 +720,67 @@ const AdminPanel: React.FC = () => {
         <Grid container spacing={2}>
           {menuItems.map((item) => (
             <Grid item xs={12} sm={6} md={4} key={item.id}>
-              <Card>
-                {item.imageBase64 && (
-                  <img 
-                    src={item.imageBase64} 
-                    alt={item.name} 
-                    style={{ width: '100%', height: 180, objectFit: 'cover' }} 
-                  />
-                )}
+              <Card sx={{ 
+                borderRadius: 3,
+                backgroundColor: 'var(--card-bg)',
+                boxShadow: '0 4px 24px var(--shadow-color)',
+                transition: 'transform 0.25s cubic-bezier(.39,.575,.56,1), box-shadow 0.25s',
+                animation: 'fadeIn 0.7s cubic-bezier(.39,.575,.56,1) both',
+                '&:hover': {
+                  transform: 'scale(1.03)',
+                  boxShadow: '0 8px 32px var(--shadow-color)'
+                }
+              }}>
                 <CardContent>
-                  {editingId === item.id ? (
-                    <>
-                      <TextField 
-                        label="Название" 
-                        name="name" 
-                        value={form.name} 
-                        onChange={handleInputChange} 
-                        fullWidth 
-                        required
-                        sx={{ mb: 1 }} 
+                  {item.imageBase64 && (
+                    <Box sx={{ 
+                      width: '100%', 
+                      height: 200, 
+                      mb: 2,
+                      borderRadius: 2,
+                      overflow: 'hidden'
+                    }}>
+                      <img 
+                        src={item.imageBase64} 
+                        alt={item.name}
+                        style={{ 
+                          width: '100%', 
+                          height: '100%', 
+                          objectFit: 'cover' 
+                        }} 
                       />
-                      <TextField 
-                        label="Описание" 
-                        name="description" 
-                        value={form.description} 
-                        onChange={handleInputChange} 
-                        fullWidth 
-                        required
-                        sx={{ mb: 1 }} 
-                      />
-                      <FormControl fullWidth required sx={{ mb: 1 }}>
-                        <InputLabel>Категория</InputLabel>
-                        <Select
-                          value={form.category}
-                          label="Категория"
-                          name="category"
-                          onChange={handleSelectChange}
-                        >
-                          {categories.map((category) => (
-                            <MenuItem key={category} value={category}>
-                              {category}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                      <TextField 
-                        label="Цена" 
-                        name="price" 
-                        value={form.price} 
-                        onChange={handleInputChange} 
-                        type="number" 
-                        fullWidth 
-                        required
-                        sx={{ mb: 1 }} 
-                      />
-                      <Button
-                        variant="outlined"
-                        component="label"
-                        startIcon={<PhotoCamera />}
-                        sx={{ width: '100%', mb: 1 }}
-                      >
-                        Загрузить картинку
-                        <input 
-                          type="file" 
-                          accept="image/*" 
-                          hidden 
-                          onChange={handleImageChange} 
-                        />
-                      </Button>
-                      <Button 
-                        variant="contained" 
-                        color="primary" 
-                        onClick={() => handleSave(item.id)}
-                        startIcon={<Save />}
-                        fullWidth
-                      >
-                        Сохранить
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <Typography variant="h6">{item.name}</Typography>
-                      <Typography color="textSecondary">{item.description}</Typography>
-                      <Typography>Категория: {item.category}</Typography>
-                      <Typography>Цена: {item.price} ₽</Typography>
-                      <CardActions>
-                        <IconButton onClick={() => handleEdit(item)} color="primary">
-                          <Edit />
-                        </IconButton>
-                        <IconButton onClick={() => handleDelete(item.id)} color="error">
-                          <Delete />
-                        </IconButton>
-                      </CardActions>
-                    </>
+                    </Box>
                   )}
+                  <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>{item.name}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>{item.description}</Typography>
+                  <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>{item.price} ₽</Typography>
                 </CardContent>
+                <CardActions sx={{ p: 2, pt: 0 }}>
+                  <Button
+                    size="small"
+                    startIcon={<Edit />}
+                    onClick={() => handleEdit(item)}
+                    sx={{
+                      color: 'var(--secondary-color)',
+                      fontWeight: 600,
+                      '&:hover': { color: 'var(--primary-hover)' }
+                    }}
+                  >
+                    Редактировать
+                  </Button>
+                  <Button
+                    size="small"
+                    startIcon={<Delete />}
+                    onClick={() => handleDelete(item.id)}
+                    sx={{
+                      color: 'var(--error-color)',
+                      fontWeight: 600,
+                      '&:hover': { color: '#d63031' }
+                    }}
+                  >
+                    Удалить
+                  </Button>
+                </CardActions>
               </Card>
             </Grid>
           ))}
@@ -701,8 +788,25 @@ const AdminPanel: React.FC = () => {
       </TabPanel>
 
       <TabPanel value={tabValue} index={1}>
-        <Typography variant="h6" gutterBottom>Управление пользователями</Typography>
-        <TableContainer component={Paper}>
+        <Typography variant="h6" gutterBottom sx={{ 
+          color: '#2d3436',
+          fontWeight: 600,
+          mb: 3
+        }}>
+          Управление пользователями
+        </Typography>
+        <TableContainer component={Paper} sx={{ 
+          borderRadius: 3,
+          border: '1px solid #f0f0f0',
+          '& .MuiTableCell-head': {
+            backgroundColor: '#7fdfd4',
+            color: '#fff',
+            fontWeight: 600
+          },
+          '& .MuiTableRow-root:hover': {
+            backgroundColor: 'rgba(127,223,212,0.05)'
+          }
+        }}>
           <Table>
             <TableHead>
               <TableRow>
@@ -723,10 +827,16 @@ const AdminPanel: React.FC = () => {
                   <TableCell>{user.roles.join(', ')}</TableCell>
                   <TableCell>{user.enabled ? 'Активен' : 'Заблокирован'}</TableCell>
                   <TableCell>
-                    <IconButton onClick={() => handleUserEdit(user)} color="primary">
+                    <IconButton 
+                      onClick={() => handleUserEdit(user)} 
+                      sx={{ color: '#7fdfd4', '&:hover': { color: '#5dbeae' } }}
+                    >
                       <Edit />
                     </IconButton>
-                    <IconButton onClick={() => handleUserDelete(user.id)} color="error">
+                    <IconButton 
+                      onClick={() => handleUserDelete(user.id)}
+                      sx={{ color: '#ff7675', '&:hover': { color: '#d63031' } }}
+                    >
                       <Delete />
                     </IconButton>
                   </TableCell>
@@ -738,8 +848,25 @@ const AdminPanel: React.FC = () => {
       </TabPanel>
 
       <TabPanel value={tabValue} index={2}>
-        <Typography variant="h6" gutterBottom>Управление заказами</Typography>
-        <TableContainer component={Paper}>
+        <Typography variant="h6" gutterBottom sx={{ 
+          color: '#2d3436',
+          fontWeight: 600,
+          mb: 3
+        }}>
+          Управление заказами
+        </Typography>
+        <TableContainer component={Paper} sx={{ 
+          borderRadius: 3,
+          border: '1px solid #f0f0f0',
+          '& .MuiTableCell-head': {
+            backgroundColor: '#7fdfd4',
+            color: '#fff',
+            fontWeight: 600
+          },
+          '& .MuiTableRow-root:hover': {
+            backgroundColor: 'rgba(127,223,212,0.05)'
+          }
+        }}>
           <Table>
             <TableHead>
               <TableRow>
@@ -762,10 +889,16 @@ const AdminPanel: React.FC = () => {
                   <TableCell>{new Date(order.orderTime).toLocaleString()}</TableCell>
                   <TableCell>{order.totalAmount} ₽</TableCell>
                   <TableCell>
-                    <IconButton onClick={() => handleOrderEdit(order)} color="primary">
+                    <IconButton 
+                      onClick={() => handleOrderEdit(order)}
+                      sx={{ color: '#7fdfd4', '&:hover': { color: '#5dbeae' } }}
+                    >
                       <Edit />
                     </IconButton>
-                    <IconButton onClick={() => handleOrderDelete(order.id)} color="error">
+                    <IconButton 
+                      onClick={() => handleOrderDelete(order.id)}
+                      sx={{ color: '#ff7675', '&:hover': { color: '#d63031' } }}
+                    >
                       <Delete />
                     </IconButton>
                   </TableCell>
@@ -776,8 +909,25 @@ const AdminPanel: React.FC = () => {
         </TableContainer>
       </TabPanel>
 
-      <Dialog open={userDialogOpen} onClose={() => setUserDialogOpen(false)}>
-        <DialogTitle>Редактировать пользователя</DialogTitle>
+      <Dialog 
+        open={userDialogOpen} 
+        onClose={() => setUserDialogOpen(false)}
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            p: 2,
+            minWidth: '400px'
+          }
+        }}
+      >
+        <DialogTitle sx={{ 
+          color: '#2d3436',
+          fontWeight: 600,
+          borderBottom: '1px solid #eee',
+          pb: 2
+        }}>
+          Редактировать пользователя
+        </DialogTitle>
         <DialogContent>
           {selectedUser && (
             <Box sx={{ pt: 2 }}>
@@ -821,13 +971,48 @@ const AdminPanel: React.FC = () => {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setUserDialogOpen(false)}>Отмена</Button>
-          <Button onClick={handleUserSave} variant="contained">Сохранить</Button>
+          <Button 
+            onClick={() => setUserDialogOpen(false)}
+            sx={{
+              color: '#2d3436',
+              '&:hover': { backgroundColor: 'rgba(0,0,0,0.05)' }
+            }}
+          >
+            Отмена
+          </Button>
+          <Button 
+            onClick={handleUserSave} 
+            variant="contained"
+            sx={{
+              backgroundColor: '#7fdfd4',
+              color: '#fff',
+              '&:hover': { backgroundColor: '#5dbeae' }
+            }}
+          >
+            Сохранить
+          </Button>
         </DialogActions>
       </Dialog>
 
-      <Dialog open={orderDialogOpen} onClose={() => setOrderDialogOpen(false)}>
-        <DialogTitle>Изменить статус заказа</DialogTitle>
+      <Dialog 
+        open={orderDialogOpen} 
+        onClose={() => setOrderDialogOpen(false)}
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            p: 2,
+            minWidth: '400px'
+          }
+        }}
+      >
+        <DialogTitle sx={{ 
+          color: '#2d3436',
+          fontWeight: 600,
+          borderBottom: '1px solid #eee',
+          pb: 2
+        }}>
+          Изменить статус заказа
+        </DialogTitle>
         <DialogContent>
           {selectedOrder && (
             <Box sx={{ pt: 2 }}>
@@ -848,8 +1033,26 @@ const AdminPanel: React.FC = () => {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOrderDialogOpen(false)}>Отмена</Button>
-          <Button onClick={handleOrderSave} variant="contained">Сохранить</Button>
+          <Button 
+            onClick={() => setOrderDialogOpen(false)}
+            sx={{
+              color: '#2d3436',
+              '&:hover': { backgroundColor: 'rgba(0,0,0,0.05)' }
+            }}
+          >
+            Отмена
+          </Button>
+          <Button 
+            onClick={handleOrderSave} 
+            variant="contained"
+            sx={{
+              backgroundColor: '#7fdfd4',
+              color: '#fff',
+              '&:hover': { backgroundColor: '#5dbeae' }
+            }}
+          >
+            Сохранить
+          </Button>
         </DialogActions>
       </Dialog>
     </Container>

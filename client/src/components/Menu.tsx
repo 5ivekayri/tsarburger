@@ -1,279 +1,309 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Card, Grid, Typography, Button, Container, Box, Snackbar, Alert,
-  FormControl, InputLabel, Select, MenuItem, SelectChangeEvent,
-  ButtonGroup, Pagination
+import {
+  Container,
+  Grid,
+  Card,
+  CardContent,
+  CardMedia,
+  Typography,
+  Button,
+  Box,
+  Tabs,
+  Tab,
+  TextField,
+  InputAdornment,
+  IconButton,
+  Alert,
+  Pagination
 } from '@mui/material';
-import { styled } from '@mui/material/styles';
-import { useNavigate } from 'react-router-dom';
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import { Search, Add, Remove, ShoppingCart } from '@mui/icons-material';
 
 interface MenuItem {
   id: string;
   name: string;
   description: string;
   price: number;
-  imageUrl?: string;
-  imageBase64?: string;
   category: string;
+  imageBase64?: string;
 }
-
-const MenuItemCard = styled(Card)({
-  height: '100%',
-  display: 'flex',
-  flexDirection: 'column',
-  transition: 'transform 0.2s',
-  '&:hover': {
-    transform: 'scale(1.02)',
-  },
-});
-
-const MenuImage = styled('img')({
-  width: '100%',
-  height: 200,
-  objectFit: 'cover',
-});
 
 const Menu: React.FC = () => {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
-  const [filteredItems, setFilteredItems] = useState<MenuItem[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>('Все');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [cart, setCart] = useState<{ [key: string]: number }>({});
+  const [error, setError] = useState('');
+  const [page, setPage] = useState(1);
   const itemsPerPage = 6;
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [notification, setNotification] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
-    open: false,
-    message: '',
-    severity: 'success'
-  });
-  const navigate = useNavigate();
 
-  const categories = ['Все', 'Бургеры', 'Напитки', 'Сайды'];
+  const categories = ['all', 'Бургеры', 'Напитки', 'Сайды'];
 
   useEffect(() => {
-    fetchMenuItems();
+    fetchMenu();
   }, []);
 
-  useEffect(() => {
-    let result = [...menuItems];
-    
-    // Фильтрация по категории
-    if (selectedCategory !== 'Все') {
-      result = result.filter(item => item.category === selectedCategory);
-    }
-    
-    // Сортировка по цене
-    if (sortOrder) {
-      result.sort((a, b) => {
-        return sortOrder === 'asc' ? a.price - b.price : b.price - a.price;
-      });
-    }
-    
-    setFilteredItems(result);
-    setCurrentPage(1); // Сбрасываем страницу при изменении фильтров
-  }, [menuItems, selectedCategory, sortOrder]);
-
-  // Вычисляем текущие элементы для отображения
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredItems.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
-
-  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
-    setCurrentPage(value);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const fetchMenuItems = async () => {
+  const fetchMenu = async () => {
     try {
       const response = await fetch('/api/menu');
-      if (!response.ok) {
-        throw new Error('Failed to fetch menu items');
-      }
+      if (!response.ok) throw new Error('Ошибка при загрузке меню');
       const data = await response.json();
       setMenuItems(data);
-      setFilteredItems(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ошибка при загрузке меню');
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      setError('Не удалось загрузить меню');
     }
   };
 
-  const handleCategoryChange = (event: SelectChangeEvent) => {
-    setSelectedCategory(event.target.value);
+  const handleCategoryChange = (_event: React.SyntheticEvent, newValue: string) => {
+    setSelectedCategory(newValue);
   };
 
-  const handleSortChange = (order: 'asc' | 'desc' | null) => {
-    setSortOrder(order);
+  const handleAddToCart = (itemId: string) => {
+    setCart(prev => ({
+      ...prev,
+      [itemId]: (prev[itemId] || 0) + 1
+    }));
   };
 
-  const addToCart = async (itemId: string) => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      window.location.href = '/login';
-      return;
-    }
-
-    try {
-      console.log('Adding item to cart:', itemId);
-      const response = await fetch('/api/cart/items', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          menuItemId: itemId,
-          quantity: 1
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Ошибка при добавлении в корзину: ${response.status}`);
+  const handleRemoveFromCart = (itemId: string) => {
+    setCart(prev => {
+      const newCart = { ...prev };
+      if (newCart[itemId] > 1) {
+        newCart[itemId]--;
+      } else {
+        delete newCart[itemId];
       }
-
-      const data = await response.json();
-      console.log('Cart update response:', data);
-
-      setNotification({
-        open: true,
-        message: 'Товар успешно добавлен в корзину!',
-        severity: 'success'
-      });
-
-      setTimeout(() => {
-        navigate('/cart');
-      }, 1000);
-    } catch (err) {
-      console.error('Ошибка при добавлении в корзину:', err);
-      setNotification({
-        open: true,
-        message: err instanceof Error ? err.message : 'Ошибка при добавлении товара в корзину',
-        severity: 'error'
-      });
-    }
+      return newCart;
+    });
   };
 
-  const handleCloseNotification = () => {
-    setNotification(prev => ({ ...prev, open: false }));
-  };
+  const filteredItems = menuItems.filter(item => {
+    const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
+    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         item.description.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
-  if (loading) return <Typography>Загрузка меню...</Typography>;
-  if (error) return <Typography color="error">{error}</Typography>;
+  const paginatedItems = filteredItems.slice(
+    (page - 1) * itemsPerPage,
+    page * itemsPerPage
+  );
+
+  const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
+    setPage(value);
+  };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography variant="h3" component="h1" gutterBottom align="center">
-        Меню
-      </Typography>
+    <Container maxWidth="xl" sx={{ 
+      py: 4,
+      backgroundColor: 'var(--background-color)',
+      minHeight: '100vh'
+    }}>
+      <Box sx={{ 
+        mb: 4,
+        backgroundColor: '#FFFFFF',
+        p: 3,
+        borderRadius: 4,
+        boxShadow: '0 4px 20px var(--shadow-color)'
+      }}>
+        <Typography variant="h4" sx={{ 
+          mb: 3,
+          color: 'var(--text-color)',
+          fontWeight: 700,
+          textAlign: 'center',
+          fontFamily: '"Helvetica Neue", Arial, sans-serif'
+        }}>
+          🍔 Меню BurgerHouse
+        </Typography>
 
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <FormControl sx={{ minWidth: 200 }}>
-          <InputLabel>Категория</InputLabel>
-          <Select
-            value={selectedCategory}
-            label="Категория"
-            onChange={handleCategoryChange}
-          >
-            {categories.map((category) => (
-              <MenuItem key={category} value={category}>
-                {category}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        {error && (
+          <Alert severity="error" sx={{ 
+            mb: 3,
+            borderRadius: 2,
+            backgroundColor: 'rgba(214,48,49,0.05)',
+            color: 'var(--error-color)',
+            border: '1px solid rgba(214,48,49,0.1)'
+          }}>
+            {error}
+          </Alert>
+        )}
 
-        <ButtonGroup variant="outlined" aria-label="sort buttons">
-          <Button
-            onClick={() => handleSortChange('asc')}
-            startIcon={<ArrowUpwardIcon />}
-            color={sortOrder === 'asc' ? 'primary' : 'inherit'}
-          >
-            По возрастанию
-          </Button>
-          <Button
-            onClick={() => handleSortChange('desc')}
-            startIcon={<ArrowDownwardIcon />}
-            color={sortOrder === 'desc' ? 'primary' : 'inherit'}
-          >
-            По убыванию
-          </Button>
-          <Button
-            onClick={() => handleSortChange(null)}
-            color={sortOrder === null ? 'primary' : 'inherit'}
-          >
-            Сбросить
-          </Button>
-        </ButtonGroup>
+        <TextField
+          fullWidth
+          placeholder="Поиск блюд..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          sx={{ mb: 3 }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search sx={{ color: 'var(--primary-color)' }} />
+              </InputAdornment>
+            ),
+            sx: {
+              borderRadius: 2,
+              backgroundColor: 'var(--background-color)',
+              '& fieldset': { borderColor: 'var(--border-color)' },
+              '&:hover fieldset': { borderColor: 'var(--primary-color)' },
+              '&.Mui-focused fieldset': { borderColor: 'var(--primary-color)' }
+            }
+          }}
+        />
+
+        <Tabs
+          value={selectedCategory}
+          onChange={handleCategoryChange}
+          variant="scrollable"
+          scrollButtons="auto"
+          sx={{
+            '& .MuiTabs-indicator': {
+              backgroundColor: 'var(--primary-color)',
+              height: 3
+            },
+            '& .MuiTab-root': {
+              textTransform: 'none',
+              fontSize: '1rem',
+              color: 'var(--text-color)',
+              '&.Mui-selected': {
+                color: 'var(--primary-color)'
+              }
+            }
+          }}
+        >
+          {categories.map((category) => (
+            <Tab key={category} label={category} value={category} />
+          ))}
+        </Tabs>
       </Box>
 
-      <Grid container spacing={4}>
-        {currentItems.map((item) => (
-          <Grid item key={item.id} xs={12} sm={6} md={4}>
-            <MenuItemCard>
-              <MenuImage 
-                src={item.imageBase64 || item.imageUrl} 
-                alt={item.name} 
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = '/placeholder-image.jpg';
-                }}
-              />
-              <Box sx={{ p: 2 }}>
-                <Typography variant="h6" component="h2" gutterBottom>
+      <Grid container spacing={3}>
+        {paginatedItems.map((item) => (
+          <Grid item xs={12} sm={6} md={4} key={item.id}>
+            <Card className="menu-card" sx={{
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              borderRadius: 3,
+              boxShadow: '0 4px 24px var(--shadow-color)',
+              transition: 'transform 0.25s cubic-bezier(.39,.575,.56,1), box-shadow 0.25s',
+              animation: 'fadeIn 0.7s cubic-bezier(.39,.575,.56,1) both',
+              '&:hover': {
+                transform: 'scale(1.03)',
+                boxShadow: '0 8px 32px var(--shadow-color)'
+              },
+              backgroundColor: 'var(--card-bg)'
+            }}>
+              {item.imageBase64 && (
+                <CardMedia
+                  component="img"
+                  height="200"
+                  image={item.imageBase64}
+                  alt={item.name}
+                  sx={{
+                    objectFit: 'cover',
+                    borderTopLeftRadius: 12,
+                    borderTopRightRadius: 12
+                  }}
+                />
+              )}
+              <CardContent sx={{ flexGrow: 1, p: 3 }}>
+                <Typography variant="h6" sx={{ 
+                  mb: 1,
+                  fontWeight: 600,
+                  color: 'var(--text-color)'
+                }}>
                   {item.name}
                 </Typography>
-                <Typography variant="body2" color="text.secondary" paragraph>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                   {item.description}
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                  Категория: {item.category}
-                </Typography>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="h6" color="primary">
+                <Box sx={{ 
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  mt: 'auto'
+                }}>
+                  <Typography variant="h6" sx={{ 
+                    color: 'var(--primary-color)',
+                    fontWeight: 600
+                  }}>
                     {item.price} ₽
                   </Typography>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => addToCart(item.id)}
-                  >
-                    В корзину
-                  </Button>
+                  <Box sx={{ 
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                  }}>
+                    {cart[item.id] ? (
+                      <>
+                        <IconButton 
+                          size="small"
+                          onClick={() => handleRemoveFromCart(item.id)}
+                          sx={{
+                            color: 'var(--primary-color)',
+                            backgroundColor: 'rgba(127,223,212,0.1)',
+                            '&:hover': {
+                              backgroundColor: 'rgba(127,223,212,0.2)'
+                            }
+                          }}
+                        >
+                          <Remove />
+                        </IconButton>
+                        <Typography sx={{ mx: 1 }}>{cart[item.id]}</Typography>
+                        <IconButton 
+                          size="small"
+                          onClick={() => handleAddToCart(item.id)}
+                          sx={{
+                            color: 'var(--primary-color)',
+                            backgroundColor: 'rgba(127,223,212,0.1)',
+                            '&:hover': {
+                              backgroundColor: 'rgba(127,223,212,0.2)'
+                            }
+                          }}
+                        >
+                          <Add />
+                        </IconButton>
+                      </>
+                    ) : (
+                      <Button
+                        variant="contained"
+                        startIcon={<ShoppingCart />}
+                        onClick={() => handleAddToCart(item.id)}
+                        sx={{
+                          backgroundColor: 'var(--primary-color)',
+                          color: '#FFFFFF',
+                          borderRadius: 2,
+                          textTransform: 'none',
+                          '&:hover': {
+                            backgroundColor: 'var(--primary-hover)'
+                          }
+                        }}
+                      >
+                        В корзину
+                      </Button>
+                    )}
+                  </Box>
                 </Box>
-              </Box>
-            </MenuItemCard>
+              </CardContent>
+            </Card>
           </Grid>
         ))}
       </Grid>
 
-      {totalPages > 1 && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-          <Pagination 
-            count={totalPages} 
-            page={currentPage} 
+      {filteredItems.length > itemsPerPage && (
+        <Box sx={{ 
+          display: 'flex',
+          justifyContent: 'center',
+          mt: 4
+        }}>
+          <Pagination
+            count={Math.ceil(filteredItems.length / itemsPerPage)}
+            page={page}
             onChange={handlePageChange}
             color="primary"
             size="large"
           />
         </Box>
       )}
-
-      <Snackbar 
-        open={notification.open} 
-        autoHideDuration={3000} 
-        onClose={handleCloseNotification}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert onClose={handleCloseNotification} severity={notification.severity}>
-          {notification.message}
-        </Alert>
-      </Snackbar>
     </Container>
   );
 };

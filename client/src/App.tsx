@@ -183,173 +183,115 @@ function App() {
   return (
     <Router>
       <Box sx={{ flexGrow: 1 }}>
-        <AppBar position="static">
+        <AppBar position="static" sx={{ 
+          backgroundColor: 'var(--primary-color)',
+          color: 'var(--text-color)',
+          boxShadow: '0 2px 8px var(--shadow-color)',
+          borderBottomLeftRadius: '18px',
+          borderBottomRightRadius: '18px',
+          animation: 'fadeInDown 0.7s cubic-bezier(.39,.575,.56,1) both'
+        }}>
           <Toolbar>
-            <Typography variant="h6" component={Link} to="/" sx={{ flexGrow: 1, textDecoration: 'none', color: 'inherit' }}>
-              Food Delivery
+            <Typography 
+              variant="h6" 
+              component={Link} 
+              to="/" 
+              sx={{ 
+                flexGrow: 1, 
+                textDecoration: 'none', 
+                color: 'var(--primary-color)',
+                fontWeight: 800,
+                fontSize: '2rem',
+                fontFamily: 'Montserrat, Arial, sans-serif',
+                letterSpacing: '0.03em',
+                textAlign: 'left',
+                display: 'flex',
+                alignItems: 'center'
+              }}
+            >
+              🍔 BurgerHouse
             </Typography>
             {isAuthenticated ? (
               <>
-                <Button color="inherit" component={Link} to="/orders">
+                <Button 
+                  component={Link} 
+                  to="/orders"
+                  sx={{ 
+                    color: 'var(--text-color)',
+                    mx: 1,
+                    '&:hover': {
+                      backgroundColor: 'rgba(127,223,212,0.1)'
+                    }
+                  }}
+                >
                   Мои заказы
                 </Button>
                 <IconButton
-                  color="inherit"
                   component={Link}
                   to="/cart"
-                  sx={{ ml: 2 }}
+                  sx={{ 
+                    ml: 2,
+                    color: 'var(--text-color)',
+                    '&:hover': {
+                      backgroundColor: 'rgba(127,223,212,0.1)'
+                    }
+                  }}
                 >
                   <Badge badgeContent={cartItemsCount} color="error">
                     <CartIcon />
                   </Badge>
                 </IconButton>
                 {roles.includes('ROLE_ADMIN') && (
-                  <Button color="inherit" component={Link} to="/admin">
-                    Админ-панель
+                  <Button 
+                    component={Link} 
+                    to="/admin"
+                    sx={{ 
+                      color: 'var(--text-color)',
+                      mx: 1,
+                      '&:hover': {
+                        backgroundColor: 'rgba(127,223,212,0.1)'
+                      }
+                    }}
+                  >
+                    Админ панель
                   </Button>
                 )}
-                <Typography sx={{ mx: 2 }}>{username}</Typography>
-                <Button color="inherit" onClick={handleLogout}>
+                <Button 
+                  onClick={handleLogout}
+                  sx={{ 
+                    color: 'var(--text-color)',
+                    mx: 1,
+                    '&:hover': {
+                      backgroundColor: 'rgba(127,223,212,0.1)'
+                    }
+                  }}
+                >
                   Выйти
                 </Button>
               </>
             ) : (
-              <Button color="inherit" component={Link} to="/login">
+              <Button 
+                component={Link} 
+                to="/login"
+                sx={{ 
+                  color: 'var(--text-color)',
+                  '&:hover': {
+                    backgroundColor: 'rgba(127,223,212,0.1)'
+                  }
+                }}
+              >
                 Войти
               </Button>
             )}
           </Toolbar>
         </AppBar>
 
-        <Container sx={{ mt: 4 }}>
+        <Container>
           <Routes>
-            <Route path="/" element={
-              <div className="app-container">
-                <nav className="nav-tabs">
-                  <button 
-                    className={`tab-button ${activeTab === 'products' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('products')}
-                  >
-                    Продукты
-                  </button>
-                  <button 
-                    className={`tab-button ${activeTab === 'users' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('users')}
-                  >
-                    Пользователи
-                  </button>
-                  <button 
-                    className={`tab-button ${activeTab === 'orders' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('orders')}
-                  >
-                    Заказы
-                  </button>
-                </nav>
-
-                <div className="content-container">
-                  {loading && (
-                    <div className="loading">
-                      <div className="loading-spinner"></div>
-                      <p>Загрузка данных...</p>
-                    </div>
-                  )}
-                  
-                  {error && (
-                    <div className="error">
-                      <p>{error}</p>
-                      <button onClick={retryFetch} className="retry-button">
-                        Повторить
-                      </button>
-                    </div>
-                  )}
-
-                  {!loading && !error && (
-                    <>
-                      {activeTab === 'products' && (
-                        <div className="products-grid">
-                          {products.length === 0 ? (
-                            <p className="no-data">Нет доступных продуктов</p>
-                          ) : (
-                            products.map((product) => (
-                              <div key={product.id} className="product-card">
-                                <h3>{product.name}</h3>
-                                <p>{product.description}</p>
-                                <p className="price">{product.price}₽</p>
-                                <p className="prep-time">Время приготовления: {product.preparationTime} мин.</p>
-                                <div className="availability">
-                                  {product.available ? (
-                                    <span className="available">В наличии</span>
-                                  ) : (
-                                    <span className="unavailable">Нет в наличии</span>
-                                  )}
-                                </div>
-                              </div>
-                            ))
-                          )}
-                        </div>
-                      )}
-
-                      {activeTab === 'users' && (
-                        <div className="users-list">
-                          {users.length === 0 ? (
-                            <p className="no-data">Нет пользователей</p>
-                          ) : (
-                            users.map((user) => (
-                              <div key={user.id} className="user-card">
-                                <h3>{user.username}</h3>
-                                <p>Email: {user.email}</p>
-                                <p>Адрес: {user.address}</p>
-                                <p>Роли: {user.roles.join(', ')}</p>
-                                <div className="user-status">
-                                  {user.enabled ? (
-                                    <span className="enabled">Активен</span>
-                                  ) : (
-                                    <span className="disabled">Отключен</span>
-                                  )}
-                                </div>
-                              </div>
-                            ))
-                          )}
-                        </div>
-                      )}
-
-                      {activeTab === 'orders' && (
-                        <div className="orders-list">
-                          {orders.length === 0 ? (
-                            <p className="no-data">Нет заказов</p>
-                          ) : (
-                            orders.map((order) => (
-                              <div key={order.id} className="order-card">
-                                <h3>Заказ #{order.id}</h3>
-                                <p>Статус: {order.status}</p>
-                                <p>Адрес доставки: {order.deliveryAddress}</p>
-                                <p>Сумма: {order.totalAmount}₽</p>
-                                <div className="order-items">
-                                  {order.items.map((item, index) => (
-                                    <div key={index} className="order-item">
-                                      <p>{item.productName} x {item.quantity}</p>
-                                      <p>{item.price}₽</p>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            ))
-                          )}
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
-              </div>
-            } />
+            <Route path="/" element={<Menu />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/orders" element={<Orders />} />
-            <Route path="/login" element={<Auth onLogin={(user: AuthUser) => {
-              setIsAuthenticated(true);
-              setUsername(user.username);
-              setRoles(user.roles || []);
-              fetchCartItemsCount();
-            }} />} />
+            <Route path="/login" element={<Auth />} />
             <Route path="/admin" element={<AdminPanel />} />
           </Routes>
         </Container>
